@@ -3556,6 +3556,112 @@ ul, ol {
   box-shadow: 0 4px 20px rgba(212, 175, 55, 0.2);
 }
 
+/* ===== LUXURY METALLIC GOLD TYPOGRAPHY & SHIMMER EFFECTS ===== */
+.gold-text-shimmer {
+  font-family: var(--font-cinzel), 'Cinzel', serif;
+  background: linear-gradient(
+    120deg,
+    #bf953f 0%,
+    #fcf6ba 25%,
+    #b38728 50%,
+    #fbf5b7 75%,
+    #aa771c 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  animation: metallicGoldShimmer 4s linear infinite;
+  filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.35));
+  letter-spacing: 0.14em;
+  font-weight: 700;
+}
+
+@keyframes metallicGoldShimmer {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Navbar & Footer Brand Typography */
+.logo-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.logo-name {
+  font-family: var(--font-cinzel), 'Cinzel', serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  background: linear-gradient(
+    120deg,
+    #d4af37 0%,
+    #fff5cf 30%,
+    #aa771c 60%,
+    #f5d77f 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: metallicGoldShimmer 4s linear infinite;
+  filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.4));
+}
+
+.logo-tagline {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: #f5d77f;
+  text-transform: uppercase;
+  margin-top: 2px;
+  opacity: 0.95;
+  text-shadow: 0 0 8px rgba(212, 175, 55, 0.35);
+}
+
+.footer-brand-title {
+  font-family: var(--font-cinzel), 'Cinzel', serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  background: linear-gradient(
+    120deg,
+    #bf953f 0%,
+    #fcf6ba 30%,
+    #b38728 60%,
+    #fbf5b7 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: metallicGoldShimmer 4s linear infinite;
+  filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.4));
+}
+
+.footer-brand-tagline {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: #f5d77f;
+  text-transform: uppercase;
+  margin-top: 2px;
+  text-shadow: 0 0 8px rgba(212, 175, 55, 0.35);
+}
+
+
 
 
 

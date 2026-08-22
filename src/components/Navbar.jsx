@@ -49,8 +49,8 @@ export default function Navbar({ onMenuOpen }) {
         >
           <NoctisLogoSVG size={44} />
           <div className="logo-text">
-            <span className="logo-name">Noctis</span>
-            <span className="logo-tagline">Oro 18k · Medellín</span>
+            <span className="logo-name">NOCTIS</span>
+            <span className="logo-tagline">ORO 18K · MEDELLÍN</span>
           </div>
         </motion.div>
 
