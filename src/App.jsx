@@ -11,7 +11,6 @@ import SiteFooter from './components/SiteFooter';
 import MenuDrawer from './components/MenuDrawer';
 import LuxuryPreloader from './components/LuxuryPreloader';
 import AdminPanelModal from './components/AdminPanelModal';
-import GoldPriceTicker from './components/GoldPriceTicker';
 
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -47,9 +46,6 @@ export default function App() {
 
   return (
     <div className="app">
-      {/* Barra de Cotización de Oro 18k en Tiempo Real */}
-      <GoldPriceTicker />
-
       {/* Preloader de Lujo Exclusivo Noctis */}
       <LuxuryPreloader onFinish={() => setLoading(false)} />
 
