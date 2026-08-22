@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from './config/supabase';
 
-const DEFAULT_PIN = '1804';
+const DEFAULT_PIN = import.meta.env.VITE_ADMIN_PIN || '1804';
 const STORAGE_KEY = 'noctis_custom_products';
 
 export default function AdminApp() {
@@ -299,7 +299,7 @@ export default function AdminApp() {
                 <KeyRound size={18} color="#888" className="admin-input-icon" />
                 <input
                   type="password"
-                  placeholder="PIN de Seguridad (1804)"
+                  placeholder="Ingresa tu PIN de Seguridad"
                   value={pinInput}
                   onChange={(e) => setPinInput(e.target.value)}
                   className={`admin-input-field ${pinError ? 'error' : ''}`}

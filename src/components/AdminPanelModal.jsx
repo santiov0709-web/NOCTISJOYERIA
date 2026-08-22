@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Lock, KeyRound, Plus, Trash2, Copy, Check, Image as ImageIcon, Video, RefreshCw, ShieldAlert, Sparkles, FolderPlus, Database, Wifi, WifiOff } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../config/supabase';
 
-const DEFAULT_PIN = '1804';
+const DEFAULT_PIN = import.meta.env.VITE_ADMIN_PIN || '1804';
 const STORAGE_KEY = 'noctis_custom_products';
 
 export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
@@ -313,7 +313,7 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
                   <KeyRound size={18} color="#888" className="admin-input-icon" />
                   <input
                     type="password"
-                    placeholder="PIN de Seguridad (ej. 1804)"
+                    placeholder="Ingresa tu PIN de Seguridad"
                     value={pinInput}
                     onChange={(e) => setPinInput(e.target.value)}
                     className={`admin-input-field ${pinError ? 'error' : ''}`}
@@ -332,9 +332,6 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
                 </button>
               </form>
 
-              <p className="admin-hint-text">
-                💡 Presiona <strong>Ctrl + Shift + A</strong> en cualquier momento para abrir/cerrar este panel.
-              </p>
             </div>
           ) : (
             /* Panel de Administración Principal */

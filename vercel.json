@@ -1,5 +1,5 @@
 {
   "rewrites": [
-    { "source": "/admin", "destination": "/admin.html" }
+    { "source": "/noctis-vault-88", "destination": "/noctis-vault-88.html" }
   ]
 }
