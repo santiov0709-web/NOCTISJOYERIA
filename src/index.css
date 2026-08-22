@@ -3799,6 +3799,238 @@ ul, ol {
   }
 }
 
+/* ===== GOLD MARKET & CALCULATOR SECTION ===== */
+.how-section {
+  padding: 100px 24px;
+  background: linear-gradient(180deg, #030406 0%, #090c12 50%, #030406 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.gold-market-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  max-width: 1280px;
+  margin: 0 auto 56px;
+}
+
+.gold-market-card {
+  background: rgba(13, 16, 23, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: var(--radius-lg, 16px);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.gold-market-card:hover {
+  border-color: #d4af37;
+  transform: translateY(-4px);
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.8), 0 0 25px rgba(212, 175, 55, 0.2);
+}
+
+.gold-market-card.highlight {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, rgba(13, 16, 23, 0.85) 100%);
+  border-color: rgba(212, 175, 55, 0.4);
+}
+
+.gold-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gold-card-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  color: #f5d77f;
+  font-weight: 500;
+}
+
+.gold-card-badge.calc {
+  background: rgba(0, 255, 179, 0.1);
+  border-color: rgba(0, 255, 179, 0.3);
+  color: #00ffb3;
+}
+
+.market-live-dot {
+  font-size: 11px;
+  color: #00ffb3;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.gold-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+.gold-card-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.gold-card-price {
+  font-family: var(--font-cinzel), serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #f5d77f;
+  letter-spacing: 0.02em;
+}
+
+.gold-card-price.alt {
+  color: #ffffff;
+}
+
+.gold-card-unit {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.gold-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 11px;
+}
+
+.trend-badge.positive {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 255, 179, 0.12);
+  color: #00ffb3;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.usd-price {
+  color: #f5d77f;
+  font-weight: 600;
+}
+
+.meta-text {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Calculator Card */
+.gram-selector-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.gram-btn {
+  flex: 1;
+  min-width: 44px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gram-btn:hover {
+  border-color: #d4af37;
+  color: #fff;
+}
+
+.gram-btn.active {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: #d4af37;
+  color: #f5d77f;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+}
+
+.calc-result-box {
+  background: rgba(0, 255, 179, 0.05);
+  border: 1px solid rgba(0, 255, 179, 0.2);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.calc-result-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.calc-result-value {
+  font-family: var(--font-cinzel), serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #00ffb3;
+  letter-spacing: 0.04em;
+}
+
+/* How CTA Block */
+.how-cta-block {
+  max-width: 1000px;
+  margin: 0 auto;
+  border-radius: var(--radius-lg, 16px);
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.06) 0%, rgba(13, 16, 23, 0.9) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.how-cta-inner {
+  padding: 48px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 18px;
+}
+
+.how-cta-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: #f5d77f;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.how-cta-title {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  color: #fff;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.how-cta-note {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+}
+
+
 
 
 
