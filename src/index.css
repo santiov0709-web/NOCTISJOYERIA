@@ -4030,6 +4030,63 @@ ul, ol {
   margin: 0;
 }
 
+/* Gold Source Banner & VIP Badge */
+.gold-source-banner {
+  max-width: 1280px;
+  margin: 0 auto 32px;
+  background: rgba(212, 175, 55, 0.04);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 12px;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+@media (max-width: 768px) {
+  .gold-source-banner {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+.gold-source-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.source-time-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #f5d77f;
+  background: rgba(212, 175, 55, 0.1);
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.vip-badge-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  color: #f5d77f;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+
 
 
 

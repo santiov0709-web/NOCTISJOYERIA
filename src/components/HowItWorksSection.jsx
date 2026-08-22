@@ -1,7 +1,7 @@
 import { motion, useInView } from 'motion/react';
 import { useRef, useState, useEffect } from 'react';
-import { getWaUrl } from '../config/whatsapp';
-import { TrendingUp, Award, ShieldCheck, Scale, Calculator, RefreshCw } from 'lucide-react';
+import { WA_URL } from '../config/whatsapp';
+import { TrendingUp, Award, ShieldCheck, Scale, Globe, Crown, RefreshCw } from 'lucide-react';
 
 const ease = [0.16, 1, 0.3, 1];
 
@@ -9,13 +9,12 @@ export default function HowItWorksSection() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-60px' });
 
-  // Cotización en tiempo real desde la API Financiera
+  // Cotización en tiempo real desde la API Financiera Oficial
   const [gold18kCOP, setGold18kCOP] = useState(318450);
   const [gold24kCOP, setGold24kCOP] = useState(424600);
   const [goldUSD, setGoldUSD] = useState(86.50);
-  const [selectedGrams, setSelectedGrams] = useState(10);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [lastFetchTime, setLastFetchTime] = useState('En vivo');
+  const [lastFetchTime, setLastFetchTime] = useState('Hace un momento');
 
   const fetchLiveGold = async () => {
     setIsUpdating(true);
@@ -35,11 +34,11 @@ export default function HowItWorksSection() {
           setGold18kCOP(calc18kCOP > 200000 ? calc18kCOP : 318450);
           setGold24kCOP(calc24kCOP > 250000 ? calc24kCOP : 424600);
           setGoldUSD(parseFloat(pricePerGram18kUSD.toFixed(2)));
-          setLastFetchTime('Actualizado en Tiempo Real');
+          setLastFetchTime('Conexión Verificada');
         }
       }
     } catch (e) {
-      console.error('Error al conectar con la API de Oro:', e);
+      console.error('Error al consultar la API de Oro:', e);
     } finally {
       setTimeout(() => setIsUpdating(false), 500);
     }
@@ -59,13 +58,8 @@ export default function HowItWorksSection() {
     }).format(val);
   };
 
-  const calculatedValue = gold18kCOP * selectedGrams;
-  const quoteWaUrl = getWaUrl(
-    `Hola Noctis Joyería, quisiera cotizar la fabricación de una prenda en Oro 18k estimada en ${selectedGrams} gramos (Cotización actual en vivo: ${formatCOP(gold18kCOP)}/g).`
-  );
-
   return (
-    <section className="how-section" id="cotizador-oro" ref={ref}>
+    <section className="how-section" id="monitor-oro" ref={ref}>
       {/* Encabezado Principal */}
       <motion.div
         className="section-header"
@@ -75,18 +69,32 @@ export default function HowItWorksSection() {
       >
         <div className="section-overline">
           <div className="section-overline-line" />
-          Mercado & Valorización en Tiempo Real
+          Información Oficial de Mercado
         </div>
         <h2 className="section-title">
-          <span className="font-cinzel">Cotización del Oro 18k & </span>
-          <span className="gold-cursive-shimmer" style={{ display: 'inline-block' }}>Valor del Metal</span>
+          <span className="font-cinzel">Monitor Oficial del </span>
+          <span className="gold-cursive-shimmer" style={{ display: 'inline-block' }}>Valor del Oro 18k</span>
         </h2>
         <p className="section-subtitle">
-          El Oro 18k es un activo real que se valoriza continuamente. Consulta la cotización conectada a la Bolsa Internacional en tiempo real y calcula el valor del metal de tu joya según su peso en gramos.
+          Brindamos información transparente y actualizada en tiempo real sobre el valor del metal para la tranquilidad y confianza de nuestros clientes.
         </p>
       </motion.div>
 
-      {/* Grid de Métricas de Mercado */}
+      {/* Badge de Fuente Oficial Verificada */}
+      <div className="gold-source-banner">
+        <div className="gold-source-content">
+          <Globe size={16} color="#f5d77f" />
+          <span>
+            <strong>Fuentes Oficiales de Información:</strong> Bolsa de Metales de Londres (LME Spot XAU) & Banco de la República de Colombia
+          </span>
+        </div>
+        <div className="source-time-tag">
+          <RefreshCw size={11} className={isUpdating ? 'spin-icon' : ''} />
+          <span>{lastFetchTime}</span>
+        </div>
+      </div>
+
+      {/* Grid Informativo de Mercado */}
       <div className="gold-market-grid">
         {/* Tarjeta 1: Oro 18k Colombia */}
         <motion.div
@@ -100,10 +108,10 @@ export default function HowItWorksSection() {
               <Award size={14} color="#f5d77f" />
               <span>Ley 750 (18 Quirates)</span>
             </div>
-            <span className="market-live-dot">🟢 API en Vivo</span>
+            <span className="market-live-dot">🟢 En Vivo</span>
           </div>
 
-          <h3 className="gold-card-title">Gramo Oro 18k Nacional</h3>
+          <h3 className="gold-card-title">Valor Gramo Oro 18k Nacional</h3>
           <div className="gold-card-price-row">
             <span className={`gold-card-price ${isUpdating ? 'price-flash' : ''}`}>
               {formatCOP(gold18kCOP)}
@@ -131,14 +139,6 @@ export default function HowItWorksSection() {
               <Scale size={14} color="#d4af37" />
               <span>Referencia Internacional</span>
             </div>
-            <RefreshCw
-              size={13}
-              className={isUpdating ? 'spin-icon' : ''}
-              color="#888"
-              onClick={fetchLiveGold}
-              style={{ cursor: 'pointer' }}
-              title="Haz clic para actualizar"
-            />
           </div>
 
           <h3 className="gold-card-title">Oro Fino 24k (Bolsa XAU)</h3>
@@ -149,47 +149,36 @@ export default function HowItWorksSection() {
 
           <div className="gold-card-meta">
             <span className="usd-price">${goldUSD} USD / g</span>
-            <span className="meta-text">{lastFetchTime}</span>
+            <span className="meta-text">Tendencia Internacional Alcista</span>
           </div>
         </motion.div>
 
-        {/* Tarjeta 3: Calculadora de Valor del Metal */}
+        {/* Tarjeta 3: Respaldo y Garantía del Metal */}
         <motion.div
-          className="gold-market-card calculator-card"
+          className="gold-market-card"
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7, delay: 0.4, ease }}
         >
           <div className="gold-card-header">
-            <div className="gold-card-badge calc">
-              <Calculator size={14} color="#00ffb3" />
-              <span>Calculadora de Metal</span>
+            <div className="gold-card-badge alt">
+              <ShieldCheck size={14} color="#00ffb3" />
+              <span>Garantía de Autor</span>
             </div>
           </div>
 
-          <h3 className="gold-card-title">Selecciona el Peso de la Joya</h3>
+          <h3 className="gold-card-title">Respaldo Total en Joyería</h3>
+          <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.6, margin: 0 }}>
+            Todas nuestras prendas cuentan con certificado de autenticidad en Ley 750 y garantía permanente sobre el metal.
+          </p>
 
-          <div className="gram-selector-row">
-            {[3, 5, 10, 15, 20, 30].map((g) => (
-              <button
-                key={g}
-                type="button"
-                className={`gram-btn ${selectedGrams === g ? 'active' : ''}`}
-                onClick={() => setSelectedGrams(g)}
-              >
-                {g}g
-              </button>
-            ))}
-          </div>
-
-          <div className="calc-result-box">
-            <span className="calc-result-label">Valor Estimado del Metal ({selectedGrams}g Oro 18k):</span>
-            <span className="calc-result-value">{formatCOP(calculatedValue)}</span>
+          <div className="gold-card-meta" style={{ marginTop: 'auto' }}>
+            <span className="meta-text">Pesaje Certificado · Taller Medellín</span>
           </div>
         </motion.div>
       </div>
 
-      {/* Bloque CTA de Cotización por Gramos */}
+      {/* Único Apartado de Asesoría VIP Noctis */}
       <motion.div
         className="how-cta-block"
         initial={{ opacity: 0, scale: 0.95 }}
@@ -198,14 +187,21 @@ export default function HowItWorksSection() {
       >
         <div className="how-cta-inner">
           <div className="how-cta-glow" />
-          <p className="how-cta-label">Transparencia Total en Gramaje & Metal</p>
+          <div className="vip-badge-tag">
+            <Crown size={14} color="#f5d77f" />
+            <span>Atención Exclusiva</span>
+          </div>
+
           <h3 className="how-cta-title">
-            <span className="font-cinzel block">Cotiza tu Joya según el</span>
-            <span className="gold-cursive-shimmer" style={{ display: 'inline-block' }}>Peso en Gramos en Vivo</span>
+            <span className="font-cinzel">Asesoría VIP Noctis</span>
           </h3>
 
+          <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)', maxWidth: '480px', margin: '0 auto', lineHeight: 1.6 }}>
+            Atención directa y personalizada para la elección o fabricación de tus prendas en Oro 18k.
+          </p>
+
           <motion.a
-            href={quoteWaUrl}
+            href={WA_URL}
             target="_blank"
             rel="noopener noreferrer"
             id="how-wa-btn"
@@ -213,12 +209,11 @@ export default function HowItWorksSection() {
             whileHover={{ scale: 1.04, boxShadow: '0 0 40px rgba(212,175,55,0.4)' }}
             whileTap={{ scale: 0.97 }}
           >
-            📊 Cotizar {selectedGrams}g al Precio en Vivo →
+            💬 Contactar Asesoría VIP →
           </motion.a>
 
           <p className="how-cta-note">
-            <ShieldCheck size={12} style={{ display: 'inline', marginRight: '4px' }} />
-            Pesaje Exacto Certificado · Factura Legal · Garantía de Vida en el Metal
+            Atención Privada por WhatsApp · Respuestas Inmediatas
           </p>
         </div>
       </motion.div>
