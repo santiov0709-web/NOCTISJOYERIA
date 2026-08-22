@@ -105,9 +105,30 @@ export default function JewelryModal({ item, open, onClose }) {
 
           {/* Bottom Info & WhatsApp CTA */}
           <div className="modal-info-footer">
-            <div>
-              <h3 className="modal-item-title font-cinzel">{item.name}</h3>
-              <p className="modal-item-subtitle font-unicase">ORO 18K CERTIFICADO · MEDELLÍN</p>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <h3 className="modal-item-title font-cinzel" style={{ margin: 0 }}>{item.name}</h3>
+                {item.tag && (
+                  <span style={{ background: 'rgba(212,175,55,0.2)', border: '1px solid #d4af37', color: '#f5d77f', padding: '2px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: '700' }}>
+                    {item.tag}
+                  </span>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
+                <p className="modal-item-subtitle font-unicase" style={{ margin: 0 }}>ORO 18K CERTIFICADO · MEDELLÍN</p>
+                {item.price && (
+                  <span style={{ color: '#00ffb3', fontWeight: '700', fontSize: '14px' }}>
+                    {item.price}
+                  </span>
+                )}
+              </div>
+
+              {item.description && (
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginTop: '6px', lineHeight: '1.4' }}>
+                  {item.description}
+                </p>
+              )}
             </div>
             <a
               href={waUrl}

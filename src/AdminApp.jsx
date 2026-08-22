@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Lock, KeyRound, Plus, Trash2, Copy, Check,
   Image as ImageIcon, Video, RefreshCw, ShieldAlert,
-  Sparkles, FolderPlus, Database, Wifi, WifiOff, ExternalLink, ArrowLeft
+  Sparkles, FolderPlus, Database, Wifi, WifiOff, ExternalLink, ArrowLeft,
+  Upload, Search, Tag, DollarSign, FileText, Eye, Layers, Star, X
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from './config/supabase';
 
@@ -15,19 +16,33 @@ export default function AdminApp() {
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
 
-  // Dashboard Tabs
+  // Tabs
   const [activeTab, setActiveTab] = useState('add'); // 'add' | 'list' | 'export'
+
+  // Product Form State
   const [productName, setProductName] = useState('');
   const [category, setCategory] = useState('Anillos');
   const [customCategory, setCustomCategory] = useState('');
+  const [price, setPrice] = useState('');
+  const [description, setDescription] = useState('');
+  const [productTag, setProductTag] = useState('🌟 Destacado');
   const [spanClass, setSpanClass] = useState('gallery-card--normal');
-  const [mediaItems, setMediaItems] = useState([
-    { type: 'image', url: '' }
-  ]);
-  const [copied, setCopied] = useState(false);
+
+  // Media Items State: [{ id, type: 'image'|'video', url, name }]
+  const [mediaItems, setMediaItems] = useState([]);
+  const [urlInput, setUrlInput] = useState('');
+  const [urlType, setUrlType] = useState('image');
+  const [isDragging, setIsDragging] = useState(false);
+
+  // UI state
   const [customProducts, setCustomProducts] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('Todos');
   const [successMessage, setSuccessMessage] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     const sessionAuth = sessionStorage.getItem('noctis_admin_authenticated');
@@ -50,8 +65,11 @@ export default function AdminApp() {
             id: item.id,
             name: item.name,
             category: item.category,
-            spanClass: item.span_class || item.spanClass,
-            media: item.media,
+            price: item.price || '',
+            description: item.description || '',
+            tag: item.tag || '',
+            spanClass: item.span_class || item.spanClass || 'gallery-card--normal',
+            media: item.media || [],
             createdAt: item.created_at
           }));
           setCustomProducts(formatted);
@@ -93,66 +111,123 @@ export default function AdminApp() {
     sessionStorage.removeItem('noctis_admin_authenticated');
   };
 
-  const handleAddMedia = (type = 'image') => {
-    setMediaItems([...mediaItems, { type, url: '' }]);
-  };
+  // Multiple File Selection & Upload (Batch Upload)
+  const processFiles = (files) => {
+    const validFiles = Array.from(files);
+    if (validFiles.length === 0) return;
 
-  const handleRemoveMedia = (index) => {
-    if (mediaItems.length <= 1) return;
-    setMediaItems(mediaItems.filter((_, i) => i !== index));
-  };
+    validFiles.forEach((file) => {
+      const isVideo = file.type.startsWith('video/');
+      const reader = new FileReader();
 
-  const handleMediaChange = (index, field, value) => {
-    const updated = [...mediaItems];
-    updated[index][field] = value;
-    setMediaItems(updated);
-  };
-
-  const handleFileUpload = (index, event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const isVideo = file.type.startsWith('video/');
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      const dataUrl = e.target.result;
-      const updated = [...mediaItems];
-      updated[index] = {
-        type: isVideo ? 'video' : 'image',
-        url: dataUrl
+      reader.onload = (e) => {
+        const dataUrl = e.target.result;
+        setMediaItems((prev) => [
+          ...prev,
+          {
+            id: 'media-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+            type: isVideo ? 'video' : 'image',
+            url: dataUrl,
+            name: file.name
+          }
+        ]);
       };
-      setMediaItems(updated);
-    };
 
-    reader.readAsDataURL(file);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileInputChange = (e) => {
+    if (e.target.files) {
+      processFiles(e.target.files);
+      e.target.value = ''; // Reset input
+    }
+  };
+
+  // Drag & Drop handlers
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processFiles(e.dataTransfer.files);
+    }
+  };
+
+  // Manual URL Add
+  const handleAddUrl = (e) => {
+    e.preventDefault();
+    if (!urlInput.trim()) return;
+    setMediaItems((prev) => [
+      ...prev,
+      {
+        id: 'media-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+        type: urlType,
+        url: urlInput.trim(),
+        name: 'URL Externa'
+      }
+    ]);
+    setUrlInput('');
+  };
+
+  const handleRemoveMediaItem = (id) => {
+    setMediaItems((prev) => prev.filter(item => item.id !== id));
+  };
+
+  const handleMoveMedia = (index, direction) => {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= mediaItems.length) return;
+    const updated = [...mediaItems];
+    const [moved] = updated.splice(index, 1);
+    updated.splice(targetIndex, 0, moved);
+    setMediaItems(updated);
   };
 
   const handleCreateProduct = async (e) => {
     e.preventDefault();
     if (!productName.trim()) {
-      alert('Por favor escribe el nombre del producto.');
+      alert('Por favor escribe el nombre de la joya.');
       return;
     }
 
-    const validMedia = mediaItems.filter(m => m.url.trim() !== '');
-    if (validMedia.length === 0) {
-      alert('Debes agregar al menos una foto o video válido.');
+    if (mediaItems.length === 0) {
+      alert('Debes agregar al menos una foto o video a la joya.');
       return;
     }
 
     setIsSaving(true);
     const finalCategory = category === 'Otro' ? customCategory.trim() || 'Exclusivo' : category;
 
+    const formattedMedia = mediaItems.map(m => ({
+      type: m.type,
+      url: m.url
+    }));
+
     const newProd = {
       id: 'custom-' + Date.now(),
       name: productName.trim(),
       category: finalCategory,
+      price: price.trim(),
+      description: description.trim(),
+      tag: productTag,
       spanClass: spanClass,
-      media: validMedia,
+      media: formattedMedia,
       createdAt: new Date().toISOString()
     };
 
+    // Save to Supabase if active
     if (isSupabaseConfigured && supabase) {
       try {
         const { error } = await supabase.from('products').insert([
@@ -160,6 +235,9 @@ export default function AdminApp() {
             id: newProd.id,
             name: newProd.name,
             category: newProd.category,
+            price: newProd.price,
+            description: newProd.description,
+            tag: newProd.tag,
             span_class: newProd.spanClass,
             media: newProd.media,
             created_at: newProd.createdAt
@@ -174,19 +252,23 @@ export default function AdminApp() {
       }
     }
 
+    // Save to LocalStorage
     const existing = [newProd, ...customProducts];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
     setCustomProducts(existing);
 
+    // Reset Form
     setProductName('');
     setCustomCategory('');
-    setMediaItems([{ type: 'image', url: '' }]);
+    setPrice('');
+    setDescription('');
+    setMediaItems([]);
     setIsSaving(false);
 
     setSuccessMessage(
       isSupabaseConfigured
-        ? '✨ ¡Joya guardada en Supabase y publicada en tiempo real para todos los clientes!'
-        : '✨ ¡Joya añadida con éxito!'
+        ? '✨ ¡Joya guardada en Supabase Cloud y publicada en tiempo real!'
+        : '✨ ¡Joya añadida con éxito al catálogo!'
     );
 
     window.dispatchEvent(new Event('noctis_products_updated'));
@@ -221,13 +303,25 @@ export default function AdminApp() {
     });
   };
 
+  // Filtered products for list view
+  const filteredProducts = customProducts.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          item.category.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategoryFilter === 'Todos' || item.category === selectedCategoryFilter;
+    return matchesSearch && matchesCategory;
+  });
+
+  const totalMediaUploaded = customProducts.reduce((acc, p) => acc + (p.media?.length || 0), 0);
+
   return (
-    <div style={{ minHeight: '100vh', background: '#080a0d', color: '#fff', display: 'flex', flexDirection: 'column' }}>
-      {/* Top Navigation Bar */}
+    <div style={{ minHeight: '100vh', background: '#05070a', color: '#fff', display: 'flex', flexDirection: 'column', fontFamily: "'Inter', sans-serif" }}>
+      
+      {/* Top Header */}
       <header style={{
-        padding: '16px 24px',
-        background: 'rgba(12, 14, 18, 0.95)',
-        borderBottom: '1px solid rgba(212, 175, 55, 0.25)',
+        padding: '16px 28px',
+        background: 'rgba(10, 13, 18, 0.95)',
+        backdropFilter: 'blur(16px)',
+        borderBottom: '1px solid rgba(212, 175, 55, 0.3)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -235,324 +329,671 @@ export default function AdminApp() {
         top: 0,
         zIndex: 100
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#d4af37', textDecoration: 'none', fontSize: '13px', fontWeight: '500' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#d4af37', textDecoration: 'none', fontSize: '13px', fontWeight: '500', transition: 'all 0.2s' }}>
             <ArrowLeft size={16} /> Volver a la Tienda
           </a>
-          <span style={{ color: 'rgba(255,255,255,0.2)' }}>|</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Sparkles size={18} color="#d4af37" />
-            <h1 className="font-cinzel" style={{ fontSize: '16px', margin: 0, letterSpacing: '0.1em', color: '#f5d77f' }}>
-              NOCTIS JOYERIA · PANEL PRIVADO
+          <span style={{ color: 'rgba(255,255,255,0.15)' }}>|</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Sparkles size={20} color="#d4af37" />
+            <h1 className="font-cinzel" style={{ fontSize: '16px', margin: 0, letterSpacing: '0.12em', color: '#f5d77f', fontWeight: '700' }}>
+              NOCTIS JOYERÍA · VAULT PRIVADO
             </h1>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           {isSupabaseConfigured ? (
-            <span className="badge-supabase-active" style={{ padding: '4px 12px', fontSize: '11px' }}>
-              <Wifi size={12} /> Supabase Cloud Conectado
+            <span className="badge-supabase-active" style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(0,255,179,0.12)', border: '1px solid rgba(0,255,179,0.3)', color: '#00ffb3' }}>
+              <Wifi size={13} /> Supabase Cloud Conectado
             </span>
           ) : (
-            <span className="badge-supabase-offline" style={{ padding: '4px 12px', fontSize: '11px' }}>
-              <WifiOff size={12} /> Modo Local (Falta .env)
+            <span className="badge-supabase-offline" style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,170,0,0.12)', border: '1px solid rgba(255,170,0,0.3)', color: '#ffaa00' }}>
+              <WifiOff size={13} /> Modo Local (LocalStorage)
             </span>
           )}
 
           {isAuthenticated && (
-            <button className="admin-tab-logout" onClick={handleLogout} style={{ padding: '8px 14px', borderRadius: '8px' }}>
+            <button className="admin-tab-logout" onClick={handleLogout} style={{ padding: '8px 16px', borderRadius: '8px', background: 'rgba(255,85,85,0.15)', border: '1px solid rgba(255,85,85,0.3)', color: '#ff7777', cursor: 'pointer', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
               <Lock size={14} /> Salir
             </button>
           )}
         </div>
       </header>
 
-      {/* Main View Area */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '32px 16px' }}>
+      {/* Body Container */}
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '36px 20px', maxWidth: '1200px', width: '100%', margin: '0 auto' }}>
+        
         {!isAuthenticated ? (
-          /* Pantalla de Desbloqueo por PIN */
+          /* Pantalla de Bloqueo / Desbloqueo por PIN */
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             style={{
-              maxWidth: '420px',
+              maxWidth: '440px',
               width: '100%',
-              margin: 'auto',
-              background: '#0e1117',
+              margin: '60px auto',
+              background: 'linear-gradient(145deg, #0e1219 0%, #07090e 100%)',
               border: '1px solid rgba(212, 175, 55, 0.4)',
-              borderRadius: '16px',
-              padding: '40px 32px',
+              borderRadius: '20px',
+              padding: '48px 36px',
               textAlign: 'center',
-              boxShadow: '0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(212,175,55,0.2)'
+              boxShadow: '0 30px 70px rgba(0,0,0,0.9), 0 0 40px rgba(212,175,55,0.2)'
             }}
           >
-            <div className="admin-lock-icon-wrap" style={{ margin: '0 auto 20px' }}>
-              <Lock size={36} color="#d4af37" />
+            <div className="admin-lock-icon-wrap" style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+              <Lock size={40} color="#d4af37" />
             </div>
-            <h2 className="font-cinzel" style={{ fontSize: '1.5rem', marginBottom: '8px', color: '#fff' }}>Acceso Administrativo</h2>
-            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', marginBottom: '24px', lineHeight: '1.5' }}>
-              Ingresa el PIN de seguridad para gestionar el catálogo de joyas en la nube.
+            <h2 className="font-cinzel" style={{ fontSize: '1.6rem', marginBottom: '10px', color: '#fff', letterSpacing: '0.08em' }}>Vault Administrativo</h2>
+            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', marginBottom: '28px', lineHeight: '1.6' }}>
+              Ingresa tu PIN de seguridad para gestionar el catálogo exclusivo de joyas en tiempo real.
             </p>
 
-            <form onSubmit={handlePinSubmit} className="admin-pin-form">
-              <div className="admin-input-group">
-                <KeyRound size={18} color="#888" className="admin-input-icon" />
+            <form onSubmit={handlePinSubmit} className="admin-pin-form" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div className="admin-input-group" style={{ position: 'relative' }}>
+                <KeyRound size={20} color="#d4af37" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="password"
                   placeholder="Ingresa tu PIN de Seguridad"
                   value={pinInput}
                   onChange={(e) => setPinInput(e.target.value)}
-                  className={`admin-input-field ${pinError ? 'error' : ''}`}
+                  style={{
+                    width: '100%',
+                    padding: '16px 16px 16px 48px',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: pinError ? '1px solid #ff4d4d' : '1px solid rgba(212, 175, 55, 0.3)',
+                    borderRadius: '12px',
+                    color: '#fff',
+                    fontSize: '15px',
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
                   autoFocus
                 />
               </div>
 
               {pinError && (
-                <div className="admin-error-msg" style={{ marginTop: '8px' }}>
-                  <ShieldAlert size={14} /> PIN incorrecto. Inténtalo de nuevo.
+                <div style={{ color: '#ff5555', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                  <ShieldAlert size={15} /> PIN incorrecto. Inténtalo de nuevo.
                 </div>
               )}
 
-              <button type="submit" className="admin-submit-btn font-unicase" style={{ marginTop: '16px' }}>
-                Desbloquear Panel
+              <button
+                type="submit"
+                className="font-unicase"
+                style={{
+                  width: '100%',
+                  padding: '16px',
+                  background: 'linear-gradient(135deg, #d4af37 0%, #a68426 100%)',
+                  color: '#050b07',
+                  fontWeight: '700',
+                  fontSize: '13px',
+                  letterSpacing: '0.12em',
+                  borderRadius: '12px',
+                  border: '1px solid #f5d77f',
+                  cursor: 'pointer',
+                  boxShadow: '0 6px 25px rgba(212, 175, 55, 0.4)',
+                  transition: 'all 0.3s'
+                }}
+              >
+                Desbloquear Vault Privado
               </button>
             </form>
           </motion.div>
         ) : (
-          /* Dashboard Principal de Administración */
-          <div style={{ maxWidth: '960px', width: '100%' }}>
-            {/* Nav Tabs */}
-            <div className="admin-tabs" style={{ background: '#0e1117', padding: '14px 20px', borderRadius: '14px 14px 0 0', border: '1px solid rgba(212, 175, 55, 0.25)', borderBottom: 'none' }}>
-              <button
-                className={`admin-tab-btn ${activeTab === 'add' ? 'active' : ''}`}
-                onClick={() => setActiveTab('add')}
-              >
-                <Plus size={16} /> Añadir Joya
-              </button>
-              <button
-                className={`admin-tab-btn ${activeTab === 'list' ? 'active' : ''}`}
-                onClick={() => setActiveTab('list')}
-              >
-                <FolderPlus size={16} /> Joyas Guardadas ({customProducts.length})
-              </button>
-              <button
-                className={`admin-tab-btn ${activeTab === 'export' ? 'active' : ''}`}
-                onClick={() => setActiveTab('export')}
-              >
-                <Copy size={16} /> Copia de Seguridad JSON
-              </button>
-              <a
-                href="/"
-                target="_blank"
-                rel="noreferrer"
-                style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#f5d77f', fontSize: '12px', textDecoration: 'none' }}
-              >
-                Ver Tienda en Vivo <ExternalLink size={14} />
-              </a>
+          /* Dashboard Principal de Administración de Lujo */
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '28px' }}>
+            
+            {/* Stats Summary Bar */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gap: '16px',
+              width: '100%'
+            }}>
+              <div style={{ background: 'rgba(14, 18, 25, 0.8)', border: '1px solid rgba(212, 175, 55, 0.25)', borderRadius: '16px', padding: '20px 24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(212, 175, 55, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <FolderPlus size={24} color="#d4af37" />
+                </div>
+                <div>
+                  <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: '600' }}>Joyas Guardadas</span>
+                  <h3 style={{ fontSize: '24px', margin: '4px 0 0', color: '#fff', fontWeight: '700' }}>{customProducts.length}</h3>
+                </div>
+              </div>
+
+              <div style={{ background: 'rgba(14, 18, 25, 0.8)', border: '1px solid rgba(212, 175, 55, 0.25)', borderRadius: '16px', padding: '20px 24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(212, 175, 55, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ImageIcon size={24} color="#d4af37" />
+                </div>
+                <div>
+                  <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: '600' }}>Fotos & Videos En Vivo</span>
+                  <h3 style={{ fontSize: '24px', margin: '4px 0 0', color: '#fff', fontWeight: '700' }}>{totalMediaUploaded}</h3>
+                </div>
+              </div>
+
+              <div style={{ background: 'rgba(14, 18, 25, 0.8)', border: '1px solid rgba(212, 175, 55, 0.25)', borderRadius: '16px', padding: '20px 24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: isSupabaseConfigured ? 'rgba(0, 255, 179, 0.12)' : 'rgba(255, 170, 0, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Database size={24} color={isSupabaseConfigured ? '#00ffb3' : '#ffaa00'} />
+                </div>
+                <div>
+                  <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: '600' }}>Sincronización Nube</span>
+                  <h3 style={{ fontSize: '14px', margin: '4px 0 0', color: isSupabaseConfigured ? '#00ffb3' : '#ffaa00', fontWeight: '600' }}>
+                    {isSupabaseConfigured ? '⚡ Supabase Conectado' : '💾 LocalStorage Activo'}
+                  </h3>
+                </div>
+              </div>
             </div>
 
-            {/* Tab Container */}
-            <div style={{ background: '#0d0f14', border: '1px solid rgba(212, 175, 55, 0.25)', borderRadius: '0 0 14px 14px', minHeight: '520px' }}>
-              {/* Tab 1: Formulario Añadir Joya */}
+            {/* Main Tabs Container */}
+            <div style={{ background: '#0a0d13', border: '1px solid rgba(212, 175, 55, 0.3)', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.8)' }}>
+              
+              {/* Header Navigation Tabs */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '16px 24px', background: '#0e121a', borderBottom: '1px solid rgba(212, 175, 55, 0.2)', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => setActiveTab('add')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '12px 22px',
+                    borderRadius: '12px',
+                    background: activeTab === 'add' ? 'linear-gradient(135deg, rgba(212,175,55,0.25), rgba(212,175,55,0.1))' : 'transparent',
+                    border: activeTab === 'add' ? '1px solid rgba(212, 175, 55, 0.5)' : '1px solid transparent',
+                    color: activeTab === 'add' ? '#f5d77f' : 'rgba(255,255,255,0.6)',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <Plus size={16} /> Publicar Nueva Joya
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('list')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '12px 22px',
+                    borderRadius: '12px',
+                    background: activeTab === 'list' ? 'linear-gradient(135deg, rgba(212,175,55,0.25), rgba(212,175,55,0.1))' : 'transparent',
+                    border: activeTab === 'list' ? '1px solid rgba(212, 175, 55, 0.5)' : '1px solid transparent',
+                    color: activeTab === 'list' ? '#f5d77f' : 'rgba(255,255,255,0.6)',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <FolderPlus size={16} /> Joyas Guardadas ({customProducts.length})
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('export')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '12px 22px',
+                    borderRadius: '12px',
+                    background: activeTab === 'export' ? 'linear-gradient(135deg, rgba(212,175,55,0.25), rgba(212,175,55,0.1))' : 'transparent',
+                    border: activeTab === 'export' ? '1px solid rgba(212, 175, 55, 0.5)' : '1px solid transparent',
+                    color: activeTab === 'export' ? '#f5d77f' : 'rgba(255,255,255,0.6)',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <Copy size={16} /> Copia JSON
+                </button>
+
+                <a
+                  href="/"
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#f5d77f', fontSize: '12px', textDecoration: 'none', fontWeight: '500', background: 'rgba(212,175,55,0.1)', padding: '8px 14px', borderRadius: '8px', border: '1px solid rgba(212,175,55,0.3)' }}
+                >
+                  Ver Tienda en Vivo <ExternalLink size={14} />
+                </a>
+              </div>
+
+              {/* Tab 1: Formulario para Añadir Joyas con Carga de Archivos Múltiples */}
               {activeTab === 'add' && (
-                <form onSubmit={handleCreateProduct} className="admin-form" style={{ maxHeight: 'none' }}>
+                <form onSubmit={handleCreateProduct} style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                  
                   {successMessage && (
-                    <div className="admin-success-banner">
-                      <Check size={16} /> {successMessage}
-                    </div>
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      style={{ background: 'rgba(0, 255, 179, 0.12)', border: '1px solid rgba(0, 255, 179, 0.4)', color: '#00ffb3', padding: '14px 20px', borderRadius: '12px', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '500' }}
+                    >
+                      <Check size={18} /> {successMessage}
+                    </motion.div>
                   )}
 
-                  <div className="admin-field-row">
-                    <div className="admin-field-col">
-                      <label className="admin-label">Nombre de la Joya *</label>
+                  {/* Fila 1: Nombre y Categoría */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.85)', marginBottom: '8px' }}>
+                        Nombre de la Joya *
+                      </label>
                       <input
                         type="text"
                         required
-                        placeholder="Ej. Anillo de Oro 18k con Zafiro Azul"
+                        placeholder="Ej. Anillo de Oro 18k con Zafiro Azul y Diamantes"
                         value={productName}
                         onChange={(e) => setProductName(e.target.value)}
-                        className="admin-input"
+                        style={{ width: '100%', padding: '14px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
 
-                    <div className="admin-field-col">
-                      <label className="admin-label">Categoría</label>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.85)', marginBottom: '8px' }}>
+                        Categoría
+                      </label>
                       <select
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
-                        className="admin-select"
+                        style={{ width: '100%', padding: '14px 16px', background: '#0e121a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
                       >
                         <option value="Anillos">Anillos 18k</option>
                         <option value="Pulseras">Pulseras 18k</option>
                         <option value="Cadenas">Cadenas & Dijes 18k</option>
                         <option value="Alta Joyería">Alta Joyería</option>
+                        <option value="Esmeraldas">Esmeraldas & Gemas</option>
+                        <option value="Relojes">Relojes de Lujo</option>
                         <option value="Otro">Otra Categoría Personalizada</option>
                       </select>
                     </div>
                   </div>
 
                   {category === 'Otro' && (
-                    <div className="admin-field">
-                      <label className="admin-label">Categoría Personalizada</label>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.85)', marginBottom: '8px' }}>
+                        Nombre de la Categoría Personalizada
+                      </label>
                       <input
                         type="text"
-                        placeholder="Ej. Dijes, Aretes, Edición Limitada"
+                        placeholder="Ej. Dijes Exclusivos, Aretes, Broches"
                         value={customCategory}
                         onChange={(e) => setCustomCategory(e.target.value)}
-                        className="admin-input"
+                        style={{ width: '100%', padding: '14px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
                   )}
 
-                  <div className="admin-field">
-                    <label className="admin-label">Formato de Tarjeta en Galería</label>
-                    <div className="admin-radio-group">
-                      <label className={`admin-radio-btn ${spanClass === 'gallery-card--normal' ? 'selected' : ''}`}>
-                        <input
-                          type="radio"
-                          name="spanClass"
-                          value="gallery-card--normal"
-                          checked={spanClass === 'gallery-card--normal'}
-                          onChange={(e) => setSpanClass(e.target.value)}
-                        />
-                        <span>Estándar (Cuadrada)</span>
+                  {/* Fila 2: Precio y Descripción */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                    <div>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.85)', marginBottom: '8px' }}>
+                        <DollarSign size={14} color="#d4af37" /> Precio Estimado (Opcional)
                       </label>
-                      <label className={`admin-radio-btn ${spanClass === 'gallery-card--tall' ? 'selected' : ''}`}>
-                        <input
-                          type="radio"
-                          name="spanClass"
-                          value="gallery-card--tall"
-                          checked={spanClass === 'gallery-card--tall'}
-                          onChange={(e) => setSpanClass(e.target.value)}
-                        />
-                        <span>Alta (Destacada)</span>
+                      <input
+                        type="text"
+                        placeholder="Ej. $2.850.000 COP o Consultar Asesor"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                        style={{ width: '100%', padding: '14px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.85)', marginBottom: '8px' }}>
+                        <Tag size={14} color="#d4af37" /> Etiqueta Promocional
                       </label>
-                      <label className={`admin-radio-btn ${spanClass === 'gallery-card--wide' ? 'selected' : ''}`}>
-                        <input
-                          type="radio"
-                          name="spanClass"
-                          value="gallery-card--wide"
-                          checked={spanClass === 'gallery-card--wide'}
-                          onChange={(e) => setSpanClass(e.target.value)}
-                        />
-                        <span>Ancha (Colección)</span>
-                      </label>
+                      <select
+                        value={productTag}
+                        onChange={(e) => setProductTag(e.target.value)}
+                        style={{ width: '100%', padding: '14px 16px', background: '#0e121a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+                      >
+                        <option value="🌟 Destacado">🌟 Destacado</option>
+                        <option value="✨ Nuevo">✨ Nuevo Lanzamiento</option>
+                        <option value="💎 Edición Limitada">💎 Edición Limitada</option>
+                        <option value="🔥 Pieza Única">🔥 Pieza Única de Autor</option>
+                      </select>
                     </div>
                   </div>
 
-                  <div className="admin-field">
-                    <div className="admin-media-header">
-                      <label className="admin-label">Archivos Multimedia ({mediaItems.length})</label>
-                      <div className="admin-media-add-buttons">
+                  {/* Fila 3: Descripción detallada */}
+                  <div>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.85)', marginBottom: '8px' }}>
+                      <FileText size={14} color="#d4af37" /> Descripción & Especificaciones (Gramos, ley 750, etc.)
+                    </label>
+                    <textarea
+                      rows={3}
+                      placeholder="Ej. Fabricado en Oro Amarillo de 18 Kilates ley 750 con un peso aproximado de 8.4 gramos. Incluye certificado de autenticidad y estuche de lujo."
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      style={{ width: '100%', padding: '14px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', color: '#fff', fontSize: '14px', outline: 'none', resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  {/* Formato de Tarjeta en Galería */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.85)', marginBottom: '8px' }}>
+                      Formato de Tarjeta en Galería
+                    </label>
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                      {[
+                        { id: 'gallery-card--normal', label: 'Estándar (Cuadrada 1:1)' },
+                        { id: 'gallery-card--tall', label: 'Alta (Destacada 1:2)' },
+                        { id: 'gallery-card--wide', label: 'Ancha (Colección 2:1)' }
+                      ].map((item) => (
                         <button
+                          key={item.id}
                           type="button"
-                          className="btn-add-media"
-                          onClick={() => handleAddMedia('image')}
+                          onClick={() => setSpanClass(item.id)}
+                          style={{
+                            padding: '10px 16px',
+                            borderRadius: '10px',
+                            border: spanClass === item.id ? '1px solid #d4af37' : '1px solid rgba(255,255,255,0.12)',
+                            background: spanClass === item.id ? 'rgba(212,175,55,0.18)' : 'rgba(255,255,255,0.03)',
+                            color: spanClass === item.id ? '#f5d77f' : 'rgba(255,255,255,0.7)',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                          }}
                         >
-                          <ImageIcon size={14} /> + Foto URL
+                          {item.label}
                         </button>
-                        <button
-                          type="button"
-                          className="btn-add-media"
-                          onClick={() => handleAddMedia('video')}
-                        >
-                          <Video size={14} /> + Video URL
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="admin-media-list">
-                      {mediaItems.map((media, idx) => (
-                        <div key={idx} className="admin-media-row">
-                          <span className="admin-media-badge">
-                            {media.type === 'video' ? '🎥 Video' : '📷 Foto'} #{idx + 1}
-                          </span>
-
-                          <input
-                            type="text"
-                            placeholder={media.type === 'video' ? '/media/mi-video.mp4 o URL externa' : '/media/mi-foto.jpg o URL de imagen'}
-                            value={media.url}
-                            onChange={(e) => handleMediaChange(idx, 'url', e.target.value)}
-                            className="admin-input media-input"
-                          />
-
-                          <label className="admin-file-upload-btn" title="Cargar desde tu dispositivo">
-                            📁 Cargar
-                            <input
-                              type="file"
-                              accept={media.type === 'video' ? 'video/*' : 'image/*'}
-                              onChange={(e) => handleFileUpload(idx, e)}
-                              style={{ display: 'none' }}
-                            />
-                          </label>
-
-                          {mediaItems.length > 1 && (
-                            <button
-                              type="button"
-                              className="admin-media-del"
-                              onClick={() => handleRemoveMedia(idx)}
-                            >
-                              <Trash2 size={14} color="#ff5555" />
-                            </button>
-                          )}
-                        </div>
                       ))}
                     </div>
                   </div>
 
+                  {/* SECCIÓN DE CARGA MASIVA DE ARCHIVOS MULTIMEDIA (FOTOS Y VIDEOS) */}
+                  <div style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(212, 175, 55, 0.25)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                      <div>
+                        <h4 style={{ margin: 0, fontSize: '15px', color: '#f5d77f', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <ImageIcon size={18} /> Fotos y Videos de la Joya ({mediaItems.length} Agregados)
+                        </h4>
+                        <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
+                          Puedes seleccionar varias fotos y videos a la vez desde tu celular o computadora.
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '12px 20px',
+                          background: 'linear-gradient(135deg, #d4af37 0%, #a68426 100%)',
+                          color: '#050b07',
+                          fontWeight: '700',
+                          fontSize: '12px',
+                          letterSpacing: '0.08em',
+                          borderRadius: '10px',
+                          border: '1px solid #f5d77f',
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 15px rgba(212, 175, 55, 0.3)'
+                        }}
+                      >
+                        <Upload size={16} /> Seleccionar Archivos Múltiples
+                      </button>
+
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        multiple
+                        accept="image/*,video/*"
+                        onChange={handleFileInputChange}
+                        style={{ display: 'none' }}
+                      />
+                    </div>
+
+                    {/* Zona Drag and Drop */}
+                    <div
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      onClick={() => fileInputRef.current?.click()}
+                      style={{
+                        border: isDragging ? '2px dashed #00ffb3' : '2px dashed rgba(212, 175, 55, 0.4)',
+                        background: isDragging ? 'rgba(0, 255, 179, 0.08)' : 'rgba(212, 175, 55, 0.03)',
+                        borderRadius: '12px',
+                        padding: '32px 20px',
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <Upload size={36} color={isDragging ? '#00ffb3' : '#d4af37'} style={{ marginBottom: '10px' }} />
+                      <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: '#fff' }}>
+                        Arrastra y suelta aquí tus fotos o videos
+                      </p>
+                      <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '4px', display: 'block' }}>
+                        Formatos soportados: JPG, PNG, WEBP, MP4, MOV, WEBM (Puedes subir 5, 10 o más de una vez)
+                      </span>
+                    </div>
+
+                    {/* Opción secundaria: Agregar por URL directa */}
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '8px' }}>
+                      <select
+                        value={urlType}
+                        onChange={(e) => setUrlType(e.target.value)}
+                        style={{ padding: '10px 14px', background: '#0e121a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                      >
+                        <option value="image">📷 Foto URL</option>
+                        <option value="video">🎥 Video URL</option>
+                      </select>
+
+                      <input
+                        type="text"
+                        placeholder="O pega un enlace/URL externa de foto o video (ej. https://...)"
+                        value={urlInput}
+                        onChange={(e) => setUrlInput(e.target.value)}
+                        style={{ flex: 1, padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
+                      />
+
+                      <button
+                        type="button"
+                        onClick={handleAddUrl}
+                        style={{ padding: '10px 16px', background: 'rgba(212,175,55,0.2)', border: '1px solid #d4af37', color: '#f5d77f', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                      >
+                        + Agregar URL
+                      </button>
+                    </div>
+
+                    {/* VISTA PREVIA INTERACTIVA DE ARCHIVOS MULTIMEDIA */}
+                    {mediaItems.length > 0 && (
+                      <div style={{ marginTop: '12px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: '600', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                          Archivos Listos para Publicar ({mediaItems.length}):
+                        </span>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '12px', marginTop: '12px' }}>
+                          {mediaItems.map((item, idx) => (
+                            <div
+                              key={item.id}
+                              style={{
+                                position: 'relative',
+                                borderRadius: '10px',
+                                overflow: 'hidden',
+                                background: '#000',
+                                border: idx === 0 ? '2px solid #d4af37' : '1px solid rgba(255,255,255,0.15)',
+                                height: '110px'
+                              }}
+                            >
+                              {item.type === 'video' ? (
+                                <video src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} autoPlay muted loop />
+                              ) : (
+                                <img src={item.url} alt={`preview-${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              )}
+
+                              {/* Badge de tipo */}
+                              <span style={{ position: 'absolute', top: '6px', left: '6px', background: 'rgba(0,0,0,0.75)', padding: '2px 6px', borderRadius: '4px', fontSize: '9px', color: '#fff', fontWeight: '600' }}>
+                                {item.type === 'video' ? '🎥 Video' : '📷 Foto'} #{idx + 1}
+                              </span>
+
+                              {/* Portada Badge */}
+                              {idx === 0 && (
+                                <span style={{ position: 'absolute', bottom: '6px', left: '6px', background: '#d4af37', color: '#000', padding: '2px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: '700' }}>
+                                  ⭐ Portada
+                                </span>
+                              )}
+
+                              {/* Del Button */}
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveMediaItem(item.id)}
+                                style={{ position: 'absolute', top: '6px', right: '6px', width: '22px', height: '22px', borderRadius: '50%', background: 'rgba(255,85,85,0.9)', border: 'none', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                title="Eliminar este archivo"
+                              >
+                                <X size={12} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Submit Button */}
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="admin-save-product-btn font-unicase"
+                    className="font-unicase"
+                    style={{
+                      padding: '18px',
+                      background: 'linear-gradient(135deg, #d4af37 0%, #a68426 100%)',
+                      color: '#030704',
+                      fontSize: '14px',
+                      fontWeight: '700',
+                      letterSpacing: '0.12em',
+                      borderRadius: '12px',
+                      border: '1px solid #f5d77f',
+                      cursor: 'pointer',
+                      boxShadow: '0 6px 30px rgba(212, 175, 55, 0.4)',
+                      transition: 'all 0.3s'
+                    }}
                   >
                     {isSaving ? 'Guardando en la Nube...' : '✨ Publicar Joya en la Galería'}
                   </button>
                 </form>
               )}
 
-              {/* Tab 2: Joyas Guardadas */}
+              {/* Tab 2: Lista de Joyas Guardadas con Filtro y Búsqueda */}
               {activeTab === 'list' && (
-                <div className="admin-list-view" style={{ maxHeight: 'none' }}>
-                  <div className="admin-list-header">
-                    <h4>Joyas en la Nube ({customProducts.length})</h4>
+                <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  
+                  {/* Search and Filters Header */}
+                  <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ position: 'relative', minWidth: '260px', flex: 1 }}>
+                      <Search size={16} color="#888" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+                      <input
+                        type="text"
+                        placeholder="Buscar por nombre o categoría..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        style={{ width: '100%', padding: '12px 14px 12px 42px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+                      {['Todos', 'Anillos', 'Pulseras', 'Cadenas', 'Alta Joyería'].map(cat => (
+                        <button
+                          key={cat}
+                          onClick={() => setSelectedCategoryFilter(cat)}
+                          style={{
+                            padding: '8px 14px',
+                            borderRadius: '8px',
+                            background: selectedCategoryFilter === cat ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.04)',
+                            border: selectedCategoryFilter === cat ? '1px solid #d4af37' : '1px solid rgba(255,255,255,0.1)',
+                            color: selectedCategoryFilter === cat ? '#f5d77f' : 'rgba(255,255,255,0.6)',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
-                  {customProducts.length === 0 ? (
-                    <div className="admin-empty-state">
-                      <Database size={40} color="#555" />
-                      <p>Aún no hay joyas adicionales agregadas.</p>
-                      <button className="admin-btn-link" onClick={() => setActiveTab('add')}>
-                        + Publicar la primera joya ahora
+                  {/* Items Grid */}
+                  {filteredProducts.length === 0 ? (
+                    <div style={{ padding: '60px', textAlign: 'center', color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+                      <Database size={44} color="#555" style={{ marginBottom: '12px' }} />
+                      <h4 style={{ margin: 0, color: '#fff' }}>No se encontraron joyas en el catálogo</h4>
+                      <p style={{ fontSize: '13px', marginTop: '6px' }}>Intenta cambiando el término de búsqueda o agrega una nueva joya.</p>
+                      <button onClick={() => setActiveTab('add')} style={{ marginTop: '14px', background: 'transparent', border: 'none', color: '#f5d77f', textDecoration: 'underline', cursor: 'pointer', fontWeight: '600' }}>
+                        + Agregar joya ahora
                       </button>
                     </div>
                   ) : (
-                    <div className="admin-custom-items-grid">
-                      {customProducts.map((prod) => (
-                        <div key={prod.id} className="admin-custom-card">
-                          <div className="admin-custom-card-preview">
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }}>
+                      {filteredProducts.map((prod) => (
+                        <div
+                          key={prod.id}
+                          style={{
+                            background: 'rgba(14, 18, 25, 0.9)',
+                            border: '1px solid rgba(212, 175, 55, 0.25)',
+                            borderRadius: '16px',
+                            overflow: 'hidden',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            position: 'relative'
+                          }}
+                        >
+                          {/* Preview Media */}
+                          <div style={{ height: '160px', position: 'relative', background: '#000' }}>
                             {prod.media[0]?.type === 'video' ? (
-                              <video src={prod.media[0]?.url} autoPlay muted loop className="preview-media" />
+                              <video src={prod.media[0]?.url} autoPlay muted loop style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             ) : (
-                              <img src={prod.media[0]?.url} alt={prod.name} className="preview-media" />
+                              <img src={prod.media[0]?.url} alt={prod.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             )}
-                            <span className="custom-card-badge">{prod.media?.length || 0} archivos</span>
+
+                            <span style={{ position: 'absolute', bottom: '8px', right: '8px', background: 'rgba(0,0,0,0.75)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', color: '#f5d77f', fontWeight: '600' }}>
+                              {prod.media?.length || 0} fotos/videos
+                            </span>
+
+                            {prod.tag && (
+                              <span style={{ position: 'absolute', top: '8px', left: '8px', background: 'rgba(212,175,55,0.9)', color: '#000', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: '700' }}>
+                                {prod.tag}
+                              </span>
+                            )}
+
+                            <button
+                              onClick={() => handleDeleteCustomProduct(prod.id)}
+                              style={{ position: 'absolute', top: '8px', right: '8px', width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,85,85,0.85)', border: 'none', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                              title="Eliminar joya"
+                            >
+                              <Trash2 size={16} />
+                            </button>
                           </div>
 
-                          <div className="admin-custom-card-info">
-                            <span className="card-category">{prod.category}</span>
-                            <h5 className="card-name">{prod.name}</h5>
-                            <span className="card-date">
-                              {prod.createdAt ? new Date(prod.createdAt).toLocaleDateString() : 'Reciente'}
+                          {/* Info */}
+                          <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
+                            <span style={{ fontSize: '11px', color: '#d4af37', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: '700' }}>
+                              {prod.category}
+                            </span>
+                            <h4 style={{ margin: 0, fontSize: '15px', color: '#fff', fontWeight: '600' }}>
+                              {prod.name}
+                            </h4>
+
+                            {prod.price && (
+                              <span style={{ fontSize: '14px', color: '#00ffb3', fontWeight: '700', marginTop: '2px' }}>
+                                {prod.price}
+                              </span>
+                            )}
+
+                            {prod.description && (
+                              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', margin: '4px 0 0', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                {prod.description}
+                              </p>
+                            )}
+
+                            <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginTop: 'auto', paddingTop: '8px' }}>
+                              Publicado: {prod.createdAt ? new Date(prod.createdAt).toLocaleDateString() : 'Reciente'}
                             </span>
                           </div>
-
-                          <button
-                            className="btn-delete-card"
-                            onClick={() => handleDeleteCustomProduct(prod.id)}
-                            title="Eliminar joya"
-                          >
-                            <Trash2 size={16} />
-                          </button>
                         </div>
                       ))}
                     </div>
@@ -560,21 +1001,40 @@ export default function AdminApp() {
                 </div>
               )}
 
-              {/* Tab 3: Copia JSON */}
+              {/* Tab 3: Respaldo JSON */}
               {activeTab === 'export' && (
-                <div className="admin-export-view" style={{ maxHeight: 'none' }}>
-                  <h4>Copia de Respaldo JSON</h4>
-                  <p className="admin-export-desc">
-                    Puedes copiar el código JSON de tus joyas registradas si deseas conservarlas en un respaldo local:
+                <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <h4 style={{ margin: 0, color: '#f5d77f', fontSize: '16px' }}>Copia de Seguridad y Migración JSON</h4>
+                  <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', lineHeight: '1.6', margin: 0 }}>
+                    Aquí puedes copiar toda la estructura de joyas registradas para respaldarla localmente o en tu base de datos:
                   </p>
 
-                  <div className="admin-json-box">
-                    <pre>{JSON.stringify(customProducts, null, 2)}</pre>
+                  <div style={{ background: '#05070a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '20px', maxHeight: '300px', overflowY: 'auto', fontFamily: 'monospace', fontSize: '12px', color: '#00ffb3' }}>
+                    <pre style={{ margin: 0 }}>{JSON.stringify(customProducts, null, 2)}</pre>
                   </div>
 
-                  <button className="admin-copy-json-btn font-unicase" onClick={handleCopyJson}>
+                  <button
+                    onClick={handleCopyJson}
+                    className="font-unicase"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '10px',
+                      padding: '16px',
+                      background: 'rgba(212, 175, 55, 0.15)',
+                      border: '1px solid #d4af37',
+                      color: '#f5d77f',
+                      fontWeight: '700',
+                      fontSize: '13px',
+                      letterSpacing: '0.1em',
+                      borderRadius: '12px',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s'
+                    }}
+                  >
                     {copied ? <Check size={18} color="#00ffb3" /> : <Copy size={18} />}
-                    {copied ? '¡Copiado al Portapapeles!' : 'Copiar Estructura JSON'}
+                    {copied ? '¡Código JSON Copiado al Portapapeles!' : 'Copiar Estructura JSON'}
                   </button>
                 </div>
               )}
