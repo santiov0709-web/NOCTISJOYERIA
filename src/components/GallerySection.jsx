@@ -313,12 +313,12 @@ export default function GallerySection() {
 
         <div className="gallery-social-buttons">
           <a
-            href="https://tiktok.com/@noctisjoyeria"
+            href="https://tiktok.com/@noctis.joyeria"
             target="_blank"
             rel="noopener noreferrer"
             className="btn-tiktok-luxury"
           >
-            🎵 TikTok: @noctisjoyeria
+            🎵 TikTok: @noctis.joyeria
           </a>
 
           <a

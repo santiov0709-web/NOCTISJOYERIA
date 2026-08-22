@@ -159,12 +159,12 @@ export default function MenuDrawer({ open, onClose }) {
               </p>
               
               <a
-                href="https://www.tiktok.com/@noctisjoyeria"
+                href="https://www.tiktok.com/@noctis.joyeria"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}
               >
-                🎵 TikTok: <strong style={{ color: 'var(--gold-light)' }}>@noctisjoyeria</strong>
+                🎵 TikTok: <strong style={{ color: 'var(--gold-light)' }}>@noctis.joyeria</strong>
               </a>
 
               <a

@@ -148,11 +148,11 @@ export default function SiteFooter() {
             <IconInstagram />
           </a>
           <a
-            href="https://tiktok.com/@noctisjoyeria"
+            href="https://tiktok.com/@noctis.joyeria"
             target="_blank"
             rel="noopener noreferrer"
             className="social-icon"
-            title="TikTok @noctisjoyeria"
+            title="TikTok @noctis.joyeria"
           >
             <IconTikTok />
           </a>
