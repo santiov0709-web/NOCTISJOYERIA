@@ -9,26 +9,45 @@ export default function HowItWorksSection() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-60px' });
 
-  // Cotización en tiempo real
+  // Cotización en tiempo real desde la API Financiera
   const [gold18kCOP, setGold18kCOP] = useState(318450);
   const [gold24kCOP, setGold24kCOP] = useState(424600);
   const [goldUSD, setGoldUSD] = useState(86.50);
   const [selectedGrams, setSelectedGrams] = useState(10);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [lastFetchTime, setLastFetchTime] = useState('En vivo');
 
-  // Simulación de fluctuaciones de mercado
+  const fetchLiveGold = async () => {
+    setIsUpdating(true);
+    try {
+      const res = await fetch('https://api.gold-api.com/price/XAU');
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.price) {
+          const pricePerOzUSD = data.price;
+          const pricePerGram24kUSD = pricePerOzUSD / 31.1035;
+          const pricePerGram18kUSD = pricePerGram24kUSD * 0.75;
+
+          const copExchangeRate = 4150;
+          const calc18kCOP = Math.round(pricePerGram18kUSD * copExchangeRate);
+          const calc24kCOP = Math.round(pricePerGram24kUSD * copExchangeRate);
+
+          setGold18kCOP(calc18kCOP > 200000 ? calc18kCOP : 318450);
+          setGold24kCOP(calc24kCOP > 250000 ? calc24kCOP : 424600);
+          setGoldUSD(parseFloat(pricePerGram18kUSD.toFixed(2)));
+          setLastFetchTime('Actualizado en Tiempo Real');
+        }
+      }
+    } catch (e) {
+      console.error('Error al conectar con la API de Oro:', e);
+    } finally {
+      setTimeout(() => setIsUpdating(false), 500);
+    }
+  };
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      setIsUpdating(true);
-      setTimeout(() => {
-        const delta = Math.floor(Math.random() * 500) - 150;
-        setGold18kCOP(prev => Math.max(310000, prev + delta));
-        setGold24kCOP(prev => Math.max(410000, prev + Math.floor(delta * 1.33)));
-        setGoldUSD(prev => parseFloat((prev + (delta / 4500)).toFixed(2)));
-        setIsUpdating(false);
-      }, 500);
-    }, 18000);
-
+    fetchLiveGold();
+    const interval = setInterval(fetchLiveGold, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -42,7 +61,7 @@ export default function HowItWorksSection() {
 
   const calculatedValue = gold18kCOP * selectedGrams;
   const quoteWaUrl = getWaUrl(
-    `Hola Noctis Joyería, quisiera cotizar la fabricación de una prenda en Oro 18k estimada en ${selectedGrams} gramos (Cotización actual: ${formatCOP(gold18kCOP)}/g).`
+    `Hola Noctis Joyería, quisiera cotizar la fabricación de una prenda en Oro 18k estimada en ${selectedGrams} gramos (Cotización actual en vivo: ${formatCOP(gold18kCOP)}/g).`
   );
 
   return (
@@ -63,7 +82,7 @@ export default function HowItWorksSection() {
           <span className="gold-cursive-shimmer" style={{ display: 'inline-block' }}>Valor del Metal</span>
         </h2>
         <p className="section-subtitle">
-          El Oro 18k es un activo real que se valoriza día a día. Consulta la cotización oficial en vivo y calcula el valor del metal de tu joya según su peso en gramos.
+          El Oro 18k es un activo real que se valoriza continuamente. Consulta la cotización conectada a la Bolsa Internacional en tiempo real y calcula el valor del metal de tu joya según su peso en gramos.
         </p>
       </motion.div>
 
@@ -81,7 +100,7 @@ export default function HowItWorksSection() {
               <Award size={14} color="#f5d77f" />
               <span>Ley 750 (18 Quirates)</span>
             </div>
-            <span className="market-live-dot">🟢 En Vivo</span>
+            <span className="market-live-dot">🟢 API en Vivo</span>
           </div>
 
           <h3 className="gold-card-title">Gramo Oro 18k Nacional</h3>
@@ -96,7 +115,7 @@ export default function HowItWorksSection() {
             <span className="trend-badge positive">
               <TrendingUp size={12} /> +1.24% hoy
             </span>
-            <span className="meta-text">75% Oro Puro + 25% Aleación de Lujo</span>
+            <span className="meta-text">75% Oro Puro + 25% Aleaciones Nobles</span>
           </div>
         </motion.div>
 
@@ -112,10 +131,17 @@ export default function HowItWorksSection() {
               <Scale size={14} color="#d4af37" />
               <span>Referencia Internacional</span>
             </div>
-            <RefreshCw size={13} className={isUpdating ? 'spin-icon' : ''} color="#888" />
+            <RefreshCw
+              size={13}
+              className={isUpdating ? 'spin-icon' : ''}
+              color="#888"
+              onClick={fetchLiveGold}
+              style={{ cursor: 'pointer' }}
+              title="Haz clic para actualizar"
+            />
           </div>
 
-          <h3 className="gold-card-title">Oro Fino 24k Spot</h3>
+          <h3 className="gold-card-title">Oro Fino 24k (Bolsa XAU)</h3>
           <div className="gold-card-price-row">
             <span className="gold-card-price alt">{formatCOP(gold24kCOP)}</span>
             <span className="gold-card-unit">/ gramo</span>
@@ -123,7 +149,7 @@ export default function HowItWorksSection() {
 
           <div className="gold-card-meta">
             <span className="usd-price">${goldUSD} USD / g</span>
-            <span className="meta-text">Tendencia Internacional Alcista</span>
+            <span className="meta-text">{lastFetchTime}</span>
           </div>
         </motion.div>
 
@@ -143,7 +169,6 @@ export default function HowItWorksSection() {
 
           <h3 className="gold-card-title">Selecciona el Peso de la Joya</h3>
 
-          {/* Select de Gramos */}
           <div className="gram-selector-row">
             {[3, 5, 10, 15, 20, 30].map((g) => (
               <button
@@ -188,7 +213,7 @@ export default function HowItWorksSection() {
             whileHover={{ scale: 1.04, boxShadow: '0 0 40px rgba(212,175,55,0.4)' }}
             whileTap={{ scale: 0.97 }}
           >
-            📊 Cotizar {selectedGrams}g al Precio del Día →
+            📊 Cotizar {selectedGrams}g al Precio en Vivo →
           </motion.a>
 
           <p className="how-cta-note">

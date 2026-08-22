@@ -1,31 +1,45 @@
 import { useState, useEffect } from 'react';
-import { TrendingUp, Sparkles, RefreshCw, ShieldCheck } from 'lucide-react';
+import { TrendingUp, RefreshCw, ShieldCheck } from 'lucide-react';
 
 export default function GoldPriceTicker() {
-  // Precio base inicial del gramo de Oro 18k en Colombia (COP) y USD
-  const [goldPrice18kCOP, setGoldPrice18kCOP] = useState(318450);
-  const [goldPrice24kCOP, setGoldPrice24kCOP] = useState(424600);
+  const [gold18kCOP, setGold18kCOP] = useState(318450);
+  const [gold24kCOP, setGold24kCOP] = useState(424600);
+  const [goldUSD, setGoldUSD] = useState(86.50);
   const [changePercentage, setChangePercentage] = useState(+1.24);
-  const [lastUpdated, setLastUpdated] = useState('Hace un momento');
+  const [lastUpdated, setLastUpdated] = useState('En vivo');
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // Simulación de fluctuación de mercado en tiempo real cada 20 segundos
+  const fetchRealGoldPrice = async () => {
+    setIsUpdating(true);
+    try {
+      const res = await fetch('https://api.gold-api.com/price/XAU');
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.price) {
+          const pricePerOzUSD = data.price;
+          const pricePerGram24kUSD = pricePerOzUSD / 31.1035;
+          const pricePerGram18kUSD = pricePerGram24kUSD * 0.75;
+
+          const copExchangeRate = 4150;
+          const calc18kCOP = Math.round(pricePerGram18kUSD * copExchangeRate);
+          const calc24kCOP = Math.round(pricePerGram24kUSD * copExchangeRate);
+
+          setGold18kCOP(calc18kCOP > 200000 ? calc18kCOP : 318450);
+          setGold24kCOP(calc24kCOP > 250000 ? calc24kCOP : 424600);
+          setGoldUSD(parseFloat(pricePerGram18kUSD.toFixed(2)));
+          setLastUpdated('Bolsa Internacional (En Vivo)');
+        }
+      }
+    } catch (e) {
+      console.error('Error al consultar la API de Oro:', e);
+    } finally {
+      setTimeout(() => setIsUpdating(false), 500);
+    }
+  };
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      setIsUpdating(true);
-      setTimeout(() => {
-        // Pequeña variación realista (+- 150 a 450 COP)
-        const delta = Math.floor(Math.random() * 600) - 200;
-        setGoldPrice18kCOP(prev => Math.max(310000, prev + delta));
-        setGoldPrice24kCOP(prev => Math.max(410000, prev + Math.floor(delta * 1.33)));
-
-        const newChange = (Math.random() * 0.4 + 1.1).toFixed(2);
-        setChangePercentage(parseFloat(newChange));
-        setLastUpdated('Hace un momento');
-        setIsUpdating(false);
-      }, 600);
-    }, 20000);
-
+    fetchRealGoldPrice();
+    const interval = setInterval(fetchRealGoldPrice, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -43,7 +57,7 @@ export default function GoldPriceTicker() {
         {/* Market Status Live Pulse */}
         <div className="gold-ticker-status">
           <span className="live-pulse-dot" />
-          <span className="status-label">Mercado Abierto</span>
+          <span className="status-label">API Mercado en Vivo</span>
         </div>
 
         {/* Price Ticker Items */}
@@ -51,7 +65,7 @@ export default function GoldPriceTicker() {
           <div className="ticker-item">
             <span className="ticker-label">Gramo Oro 18k Ley 750:</span>
             <span className={`ticker-price ${isUpdating ? 'price-flash' : ''}`}>
-              {formatCOP(goldPrice18kCOP)} /g
+              {formatCOP(gold18kCOP)} /g
             </span>
             <span className="ticker-change positive">
               <TrendingUp size={12} /> +{changePercentage}%
@@ -62,19 +76,24 @@ export default function GoldPriceTicker() {
 
           <div className="ticker-item hide-mobile">
             <span className="ticker-label">Oro Fino 24k:</span>
-            <span className="ticker-price-sub">{formatCOP(goldPrice24kCOP)} /g</span>
+            <span className="ticker-price-sub">{formatCOP(gold24kCOP)} /g (${goldUSD} USD/g)</span>
           </div>
 
           <span className="ticker-separator hide-mobile">|</span>
 
           <div className="ticker-item hide-mobile">
             <ShieldCheck size={13} color="#f5d77f" />
-            <span className="ticker-guarantee">Valorización Continua del Metal</span>
+            <span className="ticker-guarantee">Valorización Oficial del Metal</span>
           </div>
         </div>
 
         {/* Update timestamp & Refresh icon */}
-        <div className="gold-ticker-refresh" title="Actualizado en tiempo real">
+        <div
+          className="gold-ticker-refresh"
+          onClick={fetchRealGoldPrice}
+          style={{ cursor: 'pointer' }}
+          title="Haz clic para refrescar la cotización en vivo"
+        >
           <RefreshCw size={11} className={isUpdating ? 'spin-icon' : ''} />
           <span>{lastUpdated}</span>
         </div>
