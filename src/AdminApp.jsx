@@ -799,47 +799,6 @@ export default function AdminApp() {
                     </motion.div>
                   )}
 
-                  {/* PLANTILLAS RÁPIDAS NOCTIS */}
-                  <div style={{ background: 'rgba(212, 175, 55, 0.06)', border: '1px solid rgba(212, 175, 55, 0.25)', borderRadius: '14px', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#f5d77f', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Zap size={14} color="#d4af37" /> Plantillas Rápida de Joyas Frecuentes
-                      </span>
-                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Rellena datos clave con 1 clic</span>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                      <button
-                        type="button"
-                        onClick={() => applyQuickTemplate('rolex')}
-                        style={{ padding: '8px 14px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.3)', color: '#fff', fontSize: '12px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}
-                      >
-                        👑 Anillo Rolex Imperial 18k
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => applyQuickTemplate('hilo-rojo')}
-                        style={{ padding: '8px 14px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.3)', color: '#fff', fontSize: '12px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}
-                      >
-                        🔴 Pulsera Hilo Rojo Balines
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => applyQuickTemplate('cadena-cubana')}
-                        style={{ padding: '8px 14px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.3)', color: '#fff', fontSize: '12px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}
-                      >
-                        🔗 Cadena Cubana 18k
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => applyQuickTemplate('esmeralda')}
-                        style={{ padding: '8px 14px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(0,255,179,0.3)', color: '#00ffb3', fontSize: '12px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}
-                      >
-                        💎 Dije Esmeralda Colombiana
-                      </button>
-                    </div>
-                  </div>
-
                   {/* Fila 1: Nombre y Categoría */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
                     <div>
