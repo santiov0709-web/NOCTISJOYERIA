@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Lock, KeyRound, Plus, Trash2, Copy, Check, Image as ImageIcon, Video, RefreshCw, ShieldAlert, Sparkles, FolderPlus, Database, Wifi, WifiOff, Edit, RotateCcw } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../config/supabase';
+import { INITIAL_GALLERY_ITEMS } from '../config/initialProducts';
 
 const DEFAULT_PIN = import.meta.env.VITE_ADMIN_PIN || '1804';
 const STORAGE_KEY = 'noctis_custom_products';
@@ -36,7 +37,7 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
   }, []);
 
   const loadProducts = async () => {
-    // 1. Intentar cargar desde Supabase si está configurado
+    let supabaseList = [];
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase
@@ -45,7 +46,7 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
           .order('created_at', { ascending: false });
 
         if (!error && data) {
-          const formatted = data.map(item => ({
+          supabaseList = data.map(item => ({
             id: item.id,
             name: item.name,
             category: item.category,
@@ -53,26 +54,28 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
             media: item.media,
             createdAt: item.created_at
           }));
-          setCustomProducts(formatted);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(formatted));
-          return;
         }
       } catch (e) {
         console.error('Error al cargar de Supabase:', e);
       }
     }
 
-    // 2. Fallback a localStorage
+    let storageList = [];
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        setCustomProducts(JSON.parse(stored));
-      } else {
-        setCustomProducts([]);
+        storageList = JSON.parse(stored);
       }
     } catch (e) {
       console.error('Error al cargar de localStorage:', e);
     }
+
+    const combinedMap = new Map();
+    INITIAL_GALLERY_ITEMS.forEach(item => combinedMap.set(item.id, item));
+    storageList.forEach(item => combinedMap.set(item.id, item));
+    supabaseList.forEach(item => combinedMap.set(item.id, item));
+
+    setCustomProducts(Array.from(combinedMap.values()));
   };
 
   const handlePinSubmit = (e) => {

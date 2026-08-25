@@ -4,82 +4,9 @@ import { getWaUrl } from '../config/whatsapp';
 import { ChevronLeft, ChevronRight, Play, Eye } from 'lucide-react';
 import JewelryModal from './JewelryModal';
 import { supabase, isSupabaseConfigured } from '../config/supabase';
+import { INITIAL_GALLERY_ITEMS } from '../config/initialProducts';
 
 const ease = [0.16, 1, 0.3, 1];
-
-const GALLERY_ITEMS = [
-  {
-    id: 'anillo-rolex',
-    name: 'Anillos de Hombre & Sellos 18k',
-    category: 'Anillos',
-    spanClass: 'gallery-card--tall',
-    media: [
-      { type: 'video', url: '/media/anillo1-2.mp4' },
-      { type: 'video', url: '/media/anillo1-9.mp4' },
-      { type: 'image', url: '/media/anillo1-1.jpeg' },
-      { type: 'image', url: '/media/anillo1-3.jpeg' },
-      { type: 'image', url: '/media/anillo1-4.jpeg' },
-      { type: 'image', url: '/media/anillo1-5.jpeg' },
-      { type: 'image', url: '/media/anillo1-6.jpeg' },
-      { type: 'image', url: '/media/anillo1-7.jpeg' },
-      { type: 'image', url: '/media/anillo1-8.jpeg' },
-    ],
-  },
-  {
-    id: 'manilla-hilo-rojo',
-    name: 'Pulseras en Hilo Rojo & Balines 18k',
-    category: 'Pulseras',
-    spanClass: 'gallery-card--normal',
-    media: [
-      { type: 'video', url: '/media/manilla1-13.mp4' },
-      { type: 'image', url: '/media/manilla1-10.jpeg' },
-      { type: 'image', url: '/media/manilla1-11.jpeg' },
-      { type: 'image', url: '/media/manilla1-12.jpeg' },
-    ],
-  },
-  {
-    id: 'manilla-hilo-negro',
-    name: 'Pulseras Tejidas en Hilo Negro 18k',
-    category: 'Pulseras',
-    spanClass: 'gallery-card--normal',
-    media: [
-      { type: 'video', url: '/media/manilla2-18.mp4' },
-      { type: 'image', url: '/media/manilla2-14.jpeg' },
-      { type: 'image', url: '/media/manilla2-15.jpeg' },
-      { type: 'image', url: '/media/manilla2-16.jpeg' },
-      { type: 'image', url: '/media/manilla2-17.jpeg' },
-    ],
-  },
-  {
-    id: 'manilla-especial',
-    name: 'Pulseras & Cadenas de Autor 18k',
-    category: 'Pulseras',
-    spanClass: 'gallery-card--wide',
-    media: [
-      { type: 'video', url: '/media/manilla3-23.mp4' },
-      { type: 'image', url: '/media/manilla3-19.jpeg' },
-      { type: 'image', url: '/media/manilla3-20.jpeg' },
-      { type: 'image', url: '/media/manilla3-21.jpeg' },
-      { type: 'image', url: '/media/manilla3-22.jpeg' },
-    ],
-  },
-  {
-    id: 'coleccion-noctis',
-    name: 'Colección Exclusiva Noctis 18k',
-    category: 'Alta Joyería',
-    spanClass: 'gallery-card--wide',
-    media: [
-      { type: 'image', url: '/media/nocti-24.jpeg' },
-      { type: 'image', url: '/media/nocti-25.jpeg' },
-      { type: 'image', url: '/media/nocti-26.jpeg' },
-      { type: 'image', url: '/media/nocti-27.jpeg' },
-      { type: 'image', url: '/media/nocti-28.jpeg' },
-      { type: 'image', url: '/media/nocti-29.jpeg' },
-      { type: 'image', url: '/media/nocti-30.jpeg' },
-      { type: 'image', url: '/media/nocti-31.jpeg' },
-    ],
-  },
-];
 
 const getCombinedGalleryItems = (supabaseProducts = []) => {
   let customFromStorage = [];
@@ -94,14 +21,11 @@ const getCombinedGalleryItems = (supabaseProducts = []) => {
 
   const combinedMap = new Map();
 
-  // 1. Static items
-  GALLERY_ITEMS.forEach(item => combinedMap.set(item.id, item));
+  // 1. Static base items
+  INITIAL_GALLERY_ITEMS.forEach(item => combinedMap.set(item.id, item));
 
-  // 2. Storage items
+  // 2. Storage items (override static items if edited)
   customFromStorage.forEach(item => combinedMap.set(item.id, item));
-
-  // 3. Supabase items (prioridad alta)
-  supabaseProducts.forEach(item => combinedMap.set(item.id, item));
 
   return Array.from(combinedMap.values());
 };

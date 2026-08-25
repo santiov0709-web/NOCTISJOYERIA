@@ -7,6 +7,7 @@ import {
   Upload, Search, Tag, DollarSign, FileText, Eye, Layers, Star, X, Edit, RotateCcw
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from './config/supabase';
+import { INITIAL_GALLERY_ITEMS } from './config/initialProducts';
 
 const DEFAULT_PIN = import.meta.env.VITE_ADMIN_PIN || '1804';
 const STORAGE_KEY = 'noctis_custom_products';
@@ -54,6 +55,7 @@ export default function AdminApp() {
   }, []);
 
   const loadProducts = async () => {
+    let supabaseList = [];
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase
@@ -62,7 +64,7 @@ export default function AdminApp() {
           .order('created_at', { ascending: false });
 
         if (!error && data) {
-          const formatted = data.map(item => ({
+          supabaseList = data.map(item => ({
             id: item.id,
             name: item.name,
             category: item.category,
@@ -73,25 +75,29 @@ export default function AdminApp() {
             media: item.media || [],
             createdAt: item.created_at
           }));
-          setCustomProducts(formatted);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(formatted));
-          return;
         }
       } catch (e) {
         console.error('Error cargando de Supabase:', e);
       }
     }
 
+    let storageList = [];
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        setCustomProducts(JSON.parse(stored));
-      } else {
-        setCustomProducts([]);
+        storageList = JSON.parse(stored);
       }
     } catch (e) {
       console.error('Error cargando de localStorage:', e);
     }
+
+    // Combine: 1. Initial base items, 2. LocalStorage items, 3. Supabase items
+    const combinedMap = new Map();
+    INITIAL_GALLERY_ITEMS.forEach(item => combinedMap.set(item.id, item));
+    storageList.forEach(item => combinedMap.set(item.id, item));
+    supabaseList.forEach(item => combinedMap.set(item.id, item));
+
+    setCustomProducts(Array.from(combinedMap.values()));
   };
 
   const handlePinSubmit = (e) => {
