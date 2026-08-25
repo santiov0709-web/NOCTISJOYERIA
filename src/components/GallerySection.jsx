@@ -9,34 +9,7 @@ import { getAllProductsDB } from '../config/indexedDBStorage';
 
 const ease = [0.16, 1, 0.3, 1];
 
-const getCombinedGalleryItems = (indexedDBProducts = [], supabaseProducts = []) => {
-  let customFromStorage = [];
-  try {
-    const stored = localStorage.getItem('noctis_custom_products');
-    if (stored) {
-      customFromStorage = JSON.parse(stored);
-    }
-  } catch (e) {
-    console.error('Error reading custom products:', e);
-  }
-
-  const combinedMap = new Map();
-
-  // 1. Static base items siempre se muestran
-  INITIAL_GALLERY_ITEMS.forEach(item => combinedMap.set(item.id, item));
-
-  if (isSupabaseConfigured) {
-    // Si Supabase está conectado, es la única fuente de verdad para joyas personalizadas
-    supabaseProducts.forEach(item => combinedMap.set(item.id, item));
-  } else {
-    // Fallback offline si no hay Supabase
-    customFromStorage.forEach(item => combinedMap.set(item.id, item));
-    indexedDBProducts.forEach(item => combinedMap.set(item.id, item));
-    supabaseProducts.forEach(item => combinedMap.set(item.id, item));
-  }
-
-  return Array.from(combinedMap.values());
-};
+// Helper removido para simplificar la lógica de render instantáneo.
 
 function CardCarousel({ item, onOpenModal }) {
   const [index, setIndex] = useState(0);
@@ -132,17 +105,23 @@ export default function GallerySection() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-60px' });
   const [selectedModal, setSelectedModal] = useState({ open: false, item: null });
-  const [items, setItems] = useState(() => getCombinedGalleryItems([], []));
+  const [items, setItems] = useState(() => {
+    // Carga instantánea sincrónica a 0ms desde caché local (evita pop-in gráfico)
+    const combinedMap = new Map();
+    INITIAL_GALLERY_ITEMS.forEach(item => combinedMap.set(item.id, item));
+    try {
+      const stored = localStorage.getItem('noctis_custom_products');
+      if (stored) {
+        const customFromStorage = JSON.parse(stored);
+        customFromStorage.forEach(item => combinedMap.set(item.id, item));
+      }
+    } catch (e) {}
+    return Array.from(combinedMap.values());
+  });
 
   const loadGalleryProducts = async () => {
-    let indexedList = [];
-    try {
-      indexedList = await getAllProductsDB();
-    } catch (e) {
-      console.error('Error leyendo IndexedDB:', e);
-    }
-
-    let supabaseFormatted = [];
+    let supabaseFormatted = null;
+    
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase
@@ -171,7 +150,32 @@ export default function GallerySection() {
       }
     }
 
-    setItems(getCombinedGalleryItems(indexedList, supabaseFormatted));
+    const combinedMap = new Map();
+    INITIAL_GALLERY_ITEMS.forEach(item => combinedMap.set(item.id, item));
+
+    if (supabaseFormatted !== null) {
+      // Supabase cargó exitosamente. Es la única fuente de verdad.
+      supabaseFormatted.forEach(item => combinedMap.set(item.id, item));
+      const finalItems = Array.from(combinedMap.values());
+      setItems(finalItems);
+      
+      // Actualizamos el caché local para purgar fantasmas y preparar el próximo render instantáneo a 0ms
+      try {
+        localStorage.setItem('noctis_custom_products', JSON.stringify(supabaseFormatted));
+      } catch (e) {}
+    } else {
+      // Fallback offline si Supabase falla o no está configurado
+      try {
+        let indexedList = await getAllProductsDB();
+        const stored = localStorage.getItem('noctis_custom_products');
+        const storageList = stored ? JSON.parse(stored) : [];
+        
+        storageList.forEach(item => combinedMap.set(item.id, item));
+        indexedList.forEach(item => combinedMap.set(item.id, item));
+        
+        setItems(Array.from(combinedMap.values()));
+      } catch (e) {}
+    }
   };
 
   useEffect(() => {
