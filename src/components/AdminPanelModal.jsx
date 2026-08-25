@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Lock, KeyRound, Plus, Trash2, Copy, Check, Image as ImageIcon, Video, RefreshCw, ShieldAlert, Sparkles, FolderPlus, Database, Wifi, WifiOff } from 'lucide-react';
+import { X, Lock, KeyRound, Plus, Trash2, Copy, Check, Image as ImageIcon, Video, RefreshCw, ShieldAlert, Sparkles, FolderPlus, Database, Wifi, WifiOff, Edit, RotateCcw } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../config/supabase';
 
 const DEFAULT_PIN = import.meta.env.VITE_ADMIN_PIN || '1804';
@@ -13,6 +13,7 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
 
   // Form state
   const [activeTab, setActiveTab] = useState('add'); // 'add' | 'list' | 'export'
+  const [editingProductId, setEditingProductId] = useState(null);
   const [productName, setProductName] = useState('');
   const [category, setCategory] = useState('Anillos');
   const [customCategory, setCustomCategory] = useState('');
@@ -129,6 +130,35 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
     reader.readAsDataURL(file);
   };
 
+  const handleStartEdit = (prod) => {
+    setEditingProductId(prod.id);
+    setProductName(prod.name || '');
+    const standardCategories = ['Anillos', 'Pulseras', 'Cadenas', 'Alta Joyería'];
+    if (standardCategories.includes(prod.category)) {
+      setCategory(prod.category);
+      setCustomCategory('');
+    } else {
+      setCategory('Otro');
+      setCustomCategory(prod.category);
+    }
+    setSpanClass(prod.spanClass || 'gallery-card--normal');
+    setMediaItems(
+      (prod.media || []).length > 0
+        ? (prod.media || []).map(m => ({ type: m.type || 'image', url: m.url || '' }))
+        : [{ type: 'image', url: '' }]
+    );
+    setActiveTab('add');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingProductId(null);
+    setProductName('');
+    setCategory('Anillos');
+    setCustomCategory('');
+    setSpanClass('gallery-card--normal');
+    setMediaItems([{ type: 'image', url: '' }]);
+  };
+
   const handleCreateProduct = async (e) => {
     e.preventDefault();
     if (!productName.trim()) {
@@ -145,53 +175,93 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
     setIsSaving(true);
     const finalCategory = category === 'Otro' ? customCategory.trim() || 'Exclusivo' : category;
 
-    const newProd = {
-      id: 'custom-' + Date.now(),
-      name: productName.trim(),
-      category: finalCategory,
-      spanClass: spanClass,
-      media: validMedia,
-      createdAt: new Date().toISOString()
-    };
+    if (editingProductId) {
+      // MODO EDICIÓN
+      const targetProd = customProducts.find(p => p.id === editingProductId);
+      const updatedProd = {
+        id: editingProductId,
+        name: productName.trim(),
+        category: finalCategory,
+        spanClass: spanClass,
+        media: validMedia,
+        createdAt: targetProd?.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
 
-    // 1. Guardar en Supabase si está activo
-    if (isSupabaseConfigured && supabase) {
-      try {
-        const { error } = await supabase.from('products').insert([
-          {
-            id: newProd.id,
-            name: newProd.name,
-            category: newProd.category,
-            span_class: newProd.spanClass,
-            media: newProd.media,
-            created_at: newProd.createdAt
-          }
-        ]);
+      if (isSupabaseConfigured && supabase) {
+        try {
+          const { error } = await supabase
+            .from('products')
+            .update({
+              name: updatedProd.name,
+              category: updatedProd.category,
+              span_class: updatedProd.spanClass,
+              media: updatedProd.media
+            })
+            .eq('id', editingProductId);
 
-        if (error) {
-          console.error('Error insertando en Supabase:', error);
+          if (error) console.error('Error actualizando Supabase:', error);
+        } catch (err) {
+          console.error('Error Supabase catch:', err);
         }
-      } catch (err) {
-        console.error('Error Supabase catch:', err);
       }
-    }
 
-    // 2. Guardar en localStorage
-    const existing = [newProd, ...customProducts];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
-    setCustomProducts(existing);
+      const updatedList = customProducts.map(p => p.id === editingProductId ? updatedProd : p);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+      setCustomProducts(updatedList);
+      setEditingProductId(null);
+
+      setSuccessMessage('✨ ¡Joya actualizada con éxito!');
+    } else {
+      // MODO CREACIÓN
+      const newProd = {
+        id: 'custom-' + Date.now(),
+        name: productName.trim(),
+        category: finalCategory,
+        spanClass: spanClass,
+        media: validMedia,
+        createdAt: new Date().toISOString()
+      };
+
+      // 1. Guardar en Supabase si está activo
+      if (isSupabaseConfigured && supabase) {
+        try {
+          const { error } = await supabase.from('products').insert([
+            {
+              id: newProd.id,
+              name: newProd.name,
+              category: newProd.category,
+              span_class: newProd.spanClass,
+              media: newProd.media,
+              created_at: newProd.createdAt
+            }
+          ]);
+
+          if (error) {
+            console.error('Error insertando en Supabase:', error);
+          }
+        } catch (err) {
+          console.error('Error Supabase catch:', err);
+        }
+      }
+
+      // 2. Guardar en localStorage
+      const existing = [newProd, ...customProducts];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+      setCustomProducts(existing);
+
+      setSuccessMessage(
+        isSupabaseConfigured
+          ? '✨ ¡Joya guardada en Supabase y publicada en tiempo real!'
+          : '✨ ¡Joya añadida con éxito a la galería local!'
+      );
+    }
 
     // Reset form
     setProductName('');
     setCustomCategory('');
     setMediaItems([{ type: 'image', url: '' }]);
     setIsSaving(false);
-
-    setSuccessMessage(
-      isSupabaseConfigured
-        ? '✨ ¡Joya guardada en Supabase y publicada en tiempo real!'
-        : '✨ ¡Joya añadida con éxito a la galería local!'
-    );
 
     if (onProductsUpdated) {
       onProductsUpdated();
@@ -568,13 +638,23 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
                             </span>
                           </div>
 
-                          <button
-                            className="btn-delete-card"
-                            onClick={() => handleDeleteCustomProduct(prod.id)}
-                            title="Eliminar joya"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button
+                              className="btn-edit-card"
+                              onClick={() => handleStartEdit(prod)}
+                              title="Editar joya"
+                              style={{ background: 'rgba(212,175,55,0.2)', border: '1px solid #d4af37', color: '#f5d77f', borderRadius: '8px', padding: '6px', cursor: 'pointer' }}
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              className="btn-delete-card"
+                              onClick={() => handleDeleteCustomProduct(prod.id)}
+                              title="Eliminar joya"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>

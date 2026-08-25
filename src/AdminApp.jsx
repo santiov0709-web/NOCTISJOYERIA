@@ -4,7 +4,7 @@ import {
   Lock, KeyRound, Plus, Trash2, Copy, Check,
   Image as ImageIcon, Video, RefreshCw, ShieldAlert,
   Sparkles, FolderPlus, Database, Wifi, WifiOff, ExternalLink, ArrowLeft,
-  Upload, Search, Tag, DollarSign, FileText, Eye, Layers, Star, X
+  Upload, Search, Tag, DollarSign, FileText, Eye, Layers, Star, X, Edit, RotateCcw
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from './config/supabase';
 
@@ -20,6 +20,7 @@ export default function AdminApp() {
   const [activeTab, setActiveTab] = useState('add'); // 'add' | 'list' | 'export'
 
   // Product Form State
+  const [editingProductId, setEditingProductId] = useState(null);
   const [productName, setProductName] = useState('');
   const [category, setCategory] = useState('Anillos');
   const [customCategory, setCustomCategory] = useState('');
@@ -195,6 +196,45 @@ export default function AdminApp() {
     setMediaItems(updated);
   };
 
+  const handleStartEdit = (prod) => {
+    setEditingProductId(prod.id);
+    setProductName(prod.name || '');
+    const standardCategories = ['Anillos', 'Pulseras', 'Cadenas', 'Alta Joyería', 'Esmeraldas', 'Relojes'];
+    if (standardCategories.includes(prod.category)) {
+      setCategory(prod.category);
+      setCustomCategory('');
+    } else {
+      setCategory('Otro');
+      setCustomCategory(prod.category);
+    }
+    setPrice(prod.price || '');
+    setDescription(prod.description || '');
+    setProductTag(prod.tag || '🌟 Destacado');
+    setSpanClass(prod.spanClass || 'gallery-card--normal');
+    setMediaItems(
+      (prod.media || []).map((m, idx) => ({
+        id: 'media-' + Date.now() + '-' + idx + '-' + Math.random().toString(36).substr(2, 4),
+        type: m.type || 'image',
+        url: m.url || '',
+        name: m.name || (m.type === 'video' ? 'Video' : 'Foto')
+      }))
+    );
+    setActiveTab('add');
+    window.scrollTo({ top: 120, behavior: 'smooth' });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingProductId(null);
+    setProductName('');
+    setCategory('Anillos');
+    setCustomCategory('');
+    setPrice('');
+    setDescription('');
+    setProductTag('🌟 Destacado');
+    setSpanClass('gallery-card--normal');
+    setMediaItems([]);
+  };
+
   const handleCreateProduct = async (e) => {
     e.preventDefault();
     if (!productName.trim()) {
@@ -215,47 +255,101 @@ export default function AdminApp() {
       url: m.url
     }));
 
-    const newProd = {
-      id: 'custom-' + Date.now(),
-      name: productName.trim(),
-      category: finalCategory,
-      price: price.trim(),
-      description: description.trim(),
-      tag: productTag,
-      spanClass: spanClass,
-      media: formattedMedia,
-      createdAt: new Date().toISOString()
-    };
+    if (editingProductId) {
+      // MODO EDICIÓN
+      const targetProd = customProducts.find(p => p.id === editingProductId);
+      const updatedProd = {
+        id: editingProductId,
+        name: productName.trim(),
+        category: finalCategory,
+        price: price.trim(),
+        description: description.trim(),
+        tag: productTag,
+        spanClass: spanClass,
+        media: formattedMedia,
+        createdAt: targetProd?.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
 
-    // Save to Supabase if active
-    if (isSupabaseConfigured && supabase) {
-      try {
-        const { error } = await supabase.from('products').insert([
-          {
-            id: newProd.id,
-            name: newProd.name,
-            category: newProd.category,
-            price: newProd.price,
-            description: newProd.description,
-            tag: newProd.tag,
-            span_class: newProd.spanClass,
-            media: newProd.media,
-            created_at: newProd.createdAt
+      if (isSupabaseConfigured && supabase) {
+        try {
+          const { error } = await supabase
+            .from('products')
+            .update({
+              name: updatedProd.name,
+              category: updatedProd.category,
+              price: updatedProd.price,
+              description: updatedProd.description,
+              tag: updatedProd.tag,
+              span_class: updatedProd.spanClass,
+              media: updatedProd.media
+            })
+            .eq('id', editingProductId);
+
+          if (error) {
+            console.error('Error actualizando en Supabase:', error);
           }
-        ]);
-
-        if (error) {
-          console.error('Error insertando en Supabase:', error);
+        } catch (err) {
+          console.error('Error Supabase update catch:', err);
         }
-      } catch (err) {
-        console.error('Error Supabase catch:', err);
       }
-    }
 
-    // Save to LocalStorage
-    const existing = [newProd, ...customProducts];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
-    setCustomProducts(existing);
+      const updatedList = customProducts.map(p => p.id === editingProductId ? updatedProd : p);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+      setCustomProducts(updatedList);
+      setEditingProductId(null);
+
+      setSuccessMessage('✨ ¡Joya actualizada con éxito en el catálogo!');
+    } else {
+      // MODO CREACIÓN
+      const newProd = {
+        id: 'custom-' + Date.now(),
+        name: productName.trim(),
+        category: finalCategory,
+        price: price.trim(),
+        description: description.trim(),
+        tag: productTag,
+        spanClass: spanClass,
+        media: formattedMedia,
+        createdAt: new Date().toISOString()
+      };
+
+      // Save to Supabase if active
+      if (isSupabaseConfigured && supabase) {
+        try {
+          const { error } = await supabase.from('products').insert([
+            {
+              id: newProd.id,
+              name: newProd.name,
+              category: newProd.category,
+              price: newProd.price,
+              description: newProd.description,
+              tag: newProd.tag,
+              span_class: newProd.spanClass,
+              media: newProd.media,
+              created_at: newProd.createdAt
+            }
+          ]);
+
+          if (error) {
+            console.error('Error insertando en Supabase:', error);
+          }
+        } catch (err) {
+          console.error('Error Supabase catch:', err);
+        }
+      }
+
+      // Save to LocalStorage
+      const existing = [newProd, ...customProducts];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+      setCustomProducts(existing);
+
+      setSuccessMessage(
+        isSupabaseConfigured
+          ? '✨ ¡Joya guardada en Supabase Cloud y publicada en tiempo real!'
+          : '✨ ¡Joya añadida con éxito al catálogo!'
+      );
+    }
 
     // Reset Form
     setProductName('');
@@ -264,12 +358,6 @@ export default function AdminApp() {
     setDescription('');
     setMediaItems([]);
     setIsSaving(false);
-
-    setSuccessMessage(
-      isSupabaseConfigured
-        ? '✨ ¡Joya guardada en Supabase Cloud y publicada en tiempo real!'
-        : '✨ ¡Joya añadida con éxito al catálogo!'
-    );
 
     window.dispatchEvent(new Event('noctis_products_updated'));
 
@@ -506,7 +594,15 @@ export default function AdminApp() {
                     transition: 'all 0.2s'
                   }}
                 >
-                  <Plus size={16} /> Publicar Nueva Joya
+                  {editingProductId ? (
+                    <>
+                      <Edit size={16} color="#00ffb3" /> Editando Joya en Curso
+                    </>
+                  ) : (
+                    <>
+                      <Plus size={16} /> Publicar Nueva Joya
+                    </>
+                  )}
                 </button>
 
                 <button
@@ -559,10 +655,48 @@ export default function AdminApp() {
                 </a>
               </div>
 
-              {/* Tab 1: Formulario para Añadir Joyas con Carga de Archivos Múltiples */}
+              {/* Tab 1: Formulario para Añadir / Editar Joyas */}
               {activeTab === 'add' && (
                 <form onSubmit={handleCreateProduct} style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
                   
+                  {editingProductId && (
+                    <div style={{
+                      background: 'rgba(212, 175, 55, 0.12)',
+                      border: '1px solid rgba(212, 175, 55, 0.4)',
+                      borderRadius: '12px',
+                      padding: '14px 20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      color: '#f5d77f'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', fontWeight: '600' }}>
+                        <Edit size={18} color="#00ffb3" />
+                        <span>Modo Edición: Modificando la joya seleccionada</span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleCancelEdit}
+                        style={{
+                          background: 'rgba(255, 85, 85, 0.2)',
+                          border: '1px solid rgba(255, 85, 85, 0.4)',
+                          color: '#ff7777',
+                          padding: '6px 14px',
+                          borderRadius: '8px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <RotateCcw size={14} /> Cancelar Edición
+                      </button>
+                    </div>
+                  )}
+
                   {successMessage && (
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
@@ -861,19 +995,23 @@ export default function AdminApp() {
                     className="font-unicase"
                     style={{
                       padding: '18px',
-                      background: 'linear-gradient(135deg, #d4af37 0%, #a68426 100%)',
+                      background: editingProductId ? 'linear-gradient(135deg, #00ffb3 0%, #00b37e 100%)' : 'linear-gradient(135deg, #d4af37 0%, #a68426 100%)',
                       color: '#030704',
                       fontSize: '14px',
                       fontWeight: '700',
                       letterSpacing: '0.12em',
                       borderRadius: '12px',
-                      border: '1px solid #f5d77f',
+                      border: editingProductId ? '1px solid #00ffb3' : '1px solid #f5d77f',
                       cursor: 'pointer',
-                      boxShadow: '0 6px 30px rgba(212, 175, 55, 0.4)',
+                      boxShadow: editingProductId ? '0 6px 30px rgba(0, 255, 179, 0.4)' : '0 6px 30px rgba(212, 175, 55, 0.4)',
                       transition: 'all 0.3s'
                     }}
                   >
-                    {isSaving ? 'Guardando en la Nube...' : '✨ Publicar Joya en la Galería'}
+                    {isSaving
+                      ? 'Guardando Cambios...'
+                      : editingProductId
+                      ? '💾 Guardar Cambios en la Joya'
+                      : '✨ Publicar Joya en la Galería'}
                   </button>
                 </form>
               )}
@@ -934,7 +1072,7 @@ export default function AdminApp() {
                           key={prod.id}
                           style={{
                             background: 'rgba(14, 18, 25, 0.9)',
-                            border: '1px solid rgba(212, 175, 55, 0.25)',
+                            border: editingProductId === prod.id ? '2px solid #00ffb3' : '1px solid rgba(212, 175, 55, 0.25)',
                             borderRadius: '16px',
                             overflow: 'hidden',
                             display: 'flex',
@@ -960,13 +1098,23 @@ export default function AdminApp() {
                               </span>
                             )}
 
-                            <button
-                              onClick={() => handleDeleteCustomProduct(prod.id)}
-                              style={{ position: 'absolute', top: '8px', right: '8px', width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,85,85,0.85)', border: 'none', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                              title="Eliminar joya"
-                            >
-                              <Trash2 size={16} />
-                            </button>
+                            {/* Action Buttons: Edit and Delete */}
+                            <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', gap: '6px' }}>
+                              <button
+                                onClick={() => handleStartEdit(prod)}
+                                style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(212,175,55,0.95)', border: 'none', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.5)' }}
+                                title="Editar joya"
+                              >
+                                <Edit size={15} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteCustomProduct(prod.id)}
+                                style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,85,85,0.85)', border: 'none', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.5)' }}
+                                title="Eliminar joya"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
                           </div>
 
                           {/* Info */}
