@@ -133,8 +133,8 @@ export default function GallerySection() {
     return Array.from(combinedMap.values());
   });
 
-  const loadGalleryProducts = async () => {
-    setIsFetching(true);
+  const loadGalleryProducts = async (isBackground = false) => {
+    if (!isBackground) setIsFetching(true);
     let supabaseFormatted = null;
     
     if (isSupabaseConfigured && supabase) {
@@ -202,10 +202,10 @@ export default function GallerySection() {
   };
 
   useEffect(() => {
-    loadGalleryProducts();
+    loadGalleryProducts(false); // Primer load visible
 
     const handleLocalUpdate = () => {
-      loadGalleryProducts();
+      loadGalleryProducts(true); // Actualización en segundo plano silenciosa
     };
 
     window.addEventListener('noctis_products_updated', handleLocalUpdate);
@@ -216,14 +216,14 @@ export default function GallerySection() {
       channel = supabase
         .channel('public:products')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
-          loadGalleryProducts();
+          loadGalleryProducts(true); // Actualización en segundo plano silenciosa
         })
         .subscribe();
     }
 
-    // Polling automático: Forzar recarga cada 10 segundos
+    // Polling automático: Forzar recarga silenciosa cada 10 segundos
     const pollInterval = setInterval(() => {
-      loadGalleryProducts();
+      loadGalleryProducts(true);
     }, 10000);
 
     return () => {
