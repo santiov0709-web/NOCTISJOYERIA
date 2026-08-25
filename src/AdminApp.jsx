@@ -108,6 +108,23 @@ export default function AdminApp() {
       setIsAuthenticated(true);
     }
     loadProducts();
+
+    // Supabase Realtime Subscription
+    let channel;
+    if (isSupabaseConfigured && supabase) {
+      channel = supabase
+        .channel('admin:products')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+          loadProducts();
+        })
+        .subscribe();
+    }
+
+    return () => {
+      if (channel && supabase) {
+        supabase.removeChannel(channel);
+      }
+    };
   }, []);
 
   const loadProducts = async () => {
