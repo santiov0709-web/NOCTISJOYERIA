@@ -423,12 +423,6 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
                 >
                   <FolderPlus size={16} /> Joyas Guardadas ({customProducts.length})
                 </button>
-                <button
-                  className={`admin-tab-btn ${activeTab === 'export' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('export')}
-                >
-                  <Copy size={16} /> Exportar Código JSON
-                </button>
                 <button className="admin-tab-logout" onClick={handleLogout} title="Bloquear sesión">
                   <Lock size={14} /> Salir
                 </button>
@@ -662,25 +656,6 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
                       ))}
                     </div>
                   )}
-                </div>
-              )}
-
-              {/* Tab 3: Exportar JSON */}
-              {activeTab === 'export' && (
-                <div className="admin-export-view">
-                  <h4>Copia de Seguridad y Migración</h4>
-                  <p className="admin-export-desc">
-                    Puedes respaldar la lista completa de productos añadidos en formato JSON:
-                  </p>
-
-                  <div className="admin-json-box">
-                    <pre>{JSON.stringify(customProducts, null, 2)}</pre>
-                  </div>
-
-                  <button className="admin-copy-json-btn font-unicase" onClick={handleCopyJson}>
-                    {copied ? <Check size={18} color="#00ffb3" /> : <Copy size={18} />}
-                    {copied ? '¡Código JSON Copiado!' : 'Copiar Estructura JSON'}
-                  </button>
                 </div>
               )}
             </div>

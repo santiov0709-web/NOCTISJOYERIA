@@ -631,26 +631,6 @@ export default function AdminApp() {
                   <FolderPlus size={16} /> Joyas Guardadas ({customProducts.length})
                 </button>
 
-                <button
-                  onClick={() => setActiveTab('export')}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '12px 22px',
-                    borderRadius: '12px',
-                    background: activeTab === 'export' ? 'linear-gradient(135deg, rgba(212,175,55,0.25), rgba(212,175,55,0.1))' : 'transparent',
-                    border: activeTab === 'export' ? '1px solid rgba(212, 175, 55, 0.5)' : '1px solid transparent',
-                    color: activeTab === 'export' ? '#f5d77f' : 'rgba(255,255,255,0.6)',
-                    fontSize: '13px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  <Copy size={16} /> Copia JSON
-                </button>
-
                 <a
                   href="/"
                   target="_blank"
@@ -1152,44 +1132,6 @@ export default function AdminApp() {
                       ))}
                     </div>
                   )}
-                </div>
-              )}
-
-              {/* Tab 3: Respaldo JSON */}
-              {activeTab === 'export' && (
-                <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <h4 style={{ margin: 0, color: '#f5d77f', fontSize: '16px' }}>Copia de Seguridad y Migración JSON</h4>
-                  <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', lineHeight: '1.6', margin: 0 }}>
-                    Aquí puedes copiar toda la estructura de joyas registradas para respaldarla localmente o en tu base de datos:
-                  </p>
-
-                  <div style={{ background: '#05070a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '20px', maxHeight: '300px', overflowY: 'auto', fontFamily: 'monospace', fontSize: '12px', color: '#00ffb3' }}>
-                    <pre style={{ margin: 0 }}>{JSON.stringify(customProducts, null, 2)}</pre>
-                  </div>
-
-                  <button
-                    onClick={handleCopyJson}
-                    className="font-unicase"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '10px',
-                      padding: '16px',
-                      background: 'rgba(212, 175, 55, 0.15)',
-                      border: '1px solid #d4af37',
-                      color: '#f5d77f',
-                      fontWeight: '700',
-                      fontSize: '13px',
-                      letterSpacing: '0.1em',
-                      borderRadius: '12px',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s'
-                    }}
-                  >
-                    {copied ? <Check size={18} color="#00ffb3" /> : <Copy size={18} />}
-                    {copied ? '¡Código JSON Copiado al Portapapeles!' : 'Copiar Estructura JSON'}
-                  </button>
                 </div>
               )}
             </div>
