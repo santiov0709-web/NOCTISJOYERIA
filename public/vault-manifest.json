@@ -1,0 +1,24 @@
+{
+  "name": "NOCTIS JOYERÍA · Vault Privado",
+  "short_name": "Noctis Vault",
+  "description": "Panel de Control Privado de Noctis Joyería para Gestión de Catálogo en Vivo.",
+  "start_url": "/noctis-vault-88",
+  "display": "standalone",
+  "background_color": "#080a0d",
+  "theme_color": "#d4af37",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/logo-noctis.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo-noctis.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
