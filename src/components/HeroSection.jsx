@@ -20,71 +20,38 @@ const PARTICLES = [
   { x:'94%',  y:'80%', s:2.0, d:3.1  },
 ];
 
-/* ─── Diamante de Esmeralda & Oro 18k ─── */
-function HeroDiamond() {
+/* ─── Emblema Principal con Logo Noctis Joyería & Oro 18k ─── */
+function HeroLogoEmblem() {
   return (
-    <svg className="hero-diamond-svg" viewBox="0 0 340 380" fill="none">
-      <defs>
-        <linearGradient id="hd-top" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#f7e19e"/>
-          <stop offset="100%" stopColor="#d4af37"/>
-        </linearGradient>
-        <linearGradient id="hd-left" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#0d2415"/>
-          <stop offset="100%" stopColor="#183f25"/>
-        </linearGradient>
-        <linearGradient id="hd-right" x1="100%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#e8c46a"/>
-          <stop offset="100%" stopColor="#b8922c"/>
-        </linearGradient>
-        <linearGradient id="hd-center" x1="50%" y1="0%" x2="50%" y2="100%">
-          <stop offset="0%" stopColor="rgba(247,225,158,0.95)"/>
-          <stop offset="100%" stopColor="rgba(212,175,55,0.4)"/>
-        </linearGradient>
-        <filter id="glow-gem"><feGaussianBlur stdDeviation="8" result="blur"/>
-          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-        <filter id="glow-soft"><feGaussianBlur stdDeviation="22" result="blur"/>
-          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-      </defs>
+    <div className="hero-logo-container">
+      {/* Anillo exterior dorado de rotación continua */}
+      <motion.div
+        className="hero-logo-ring-outer"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+      />
 
-      <ellipse cx="170" cy="200" rx="140" ry="120" fill="rgba(212,175,55,0.12)" filter="url(#glow-soft)"/>
-      <ellipse cx="170" cy="200" rx="100" ry="80" fill="rgba(24,63,37,0.35)" filter="url(#glow-soft)"/>
+      {/* Anillo interior contrarrotativo de esmeralda y oro */}
+      <motion.div
+        className="hero-logo-ring-inner"
+        animate={{ rotate: -360 }}
+        transition={{ duration: 16, repeat: Infinity, ease: 'linear' }}
+      />
 
-      <polygon points="170,40 230,100 170,130 110,100" fill="url(#hd-top)" opacity="0.95" filter="url(#glow-gem)"/>
-      <polygon points="110,100 170,130 140,175 70,145" fill="url(#hd-left)" opacity="0.9"/>
-      <polygon points="230,100 290,145 220,175 170,130" fill="url(#hd-right)" opacity="0.88"/>
-      <polygon points="70,145 140,175 120,220 50,190" fill="#0d2415" opacity="0.85"/>
-      <polygon points="220,175 290,145 310,190 240,220" fill="#d4af37" opacity="0.8"/>
-      <polygon points="140,175 220,175 200,220 160,220" fill="url(#hd-center)" opacity="0.95"/>
-      <polygon points="50,190 120,220 100,280 30,240" fill="#0b1b10" opacity="0.8"/>
-      <polygon points="240,220 310,190 330,240 260,280" fill="#a68426" opacity="0.75"/>
-      <polygon points="160,220 200,220 180,290" fill="#d4af37" opacity="0.85"/>
-      <polygon points="100,280 160,220 180,290 130,330" fill="#183f25" opacity="0.8"/>
-      <polygon points="200,220 260,280 210,330 180,290" fill="#b8922c" opacity="0.78"/>
-      <polygon points="130,330 180,290 210,330 170,355" fill="url(#hd-top)" opacity="0.9" filter="url(#glow-gem)"/>
-      <polygon points="170,48 215,95 170,122 125,95" fill="rgba(255,248,220,0.45)"/>
-      <g stroke="rgba(212,175,55,0.28)" strokeWidth="0.8" fill="none">
-        <line x1="170" y1="40"  x2="110" y2="100"/>
-        <line x1="170" y1="40"  x2="230" y2="100"/>
-        <line x1="110" y1="100" x2="170" y2="130"/>
-        <line x1="230" y1="100" x2="170" y2="130"/>
-        <line x1="170" y1="130" x2="140" y2="175"/>
-        <line x1="170" y1="130" x2="220" y2="175"/>
-        <line x1="110" y1="100" x2="70"  y2="145"/>
-        <line x1="230" y1="100" x2="290" y2="145"/>
-        <line x1="70"  y1="145" x2="140" y2="175"/>
-        <line x1="290" y1="145" x2="220" y2="175"/>
-        <line x1="140" y1="175" x2="120" y2="220"/>
-        <line x1="220" y1="175" x2="240" y2="220"/>
-        <line x1="160" y1="220" x2="180" y2="290"/>
-        <line x1="200" y1="220" x2="180" y2="290"/>
-        <line x1="100" y1="280" x2="170" y2="355"/>
-        <line x1="260" y1="280" x2="170" y2="355"/>
-        <line x1="180" y1="290" x2="170" y2="355"/>
-      </g>
-    </svg>
+      {/* Marco principal del Logo Noctis con destellos */}
+      <div className="hero-logo-frame">
+        <motion.img
+          src="/logo-noctis-transparent.png"
+          onError={(e) => { e.target.src = '/logo-noctis.png'; }}
+          alt="Logo Oficial Noctis Joyería"
+          className="hero-logo-img"
+          initial={{ scale: 0.85, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1.2, ease }}
+        />
+        <div className="hero-logo-shimmer" />
+      </div>
+    </div>
   );
 }
 
@@ -110,7 +77,7 @@ export default function HeroSection() {
 
       <motion.div className="hero-gem-wrapper" style={{ y: gemY, scale: gemScale }}>
         <div className="hero-gem-glow"/>
-        <HeroDiamond />
+        <HeroLogoEmblem />
       </motion.div>
 
       <div className="scroll-hint" aria-hidden="true">
