@@ -7,7 +7,7 @@ import {
   Upload, Search, Tag, DollarSign, FileText, Eye, Layers, Star, X, Edit, RotateCcw,
   Palette, LayoutGrid, List, Zap, Crown, Sliders
 } from 'lucide-react';
-import { supabase, isSupabaseConfigured } from './config/supabase';
+import { supabase, isSupabaseConfigured, uploadMediaToSupabase } from './config/supabase';
 import { INITIAL_GALLERY_ITEMS } from './config/initialProducts';
 import {
   getAllProductsDB,
@@ -382,15 +382,20 @@ export default function AdminApp() {
     try {
       const finalCategory = category === 'Otro' ? customCategory.trim() || 'Exclusivo' : category;
 
-      // Optimizar imágenes en segundo plano (HD 1600px) y guardar metadata en JSONB
+      // Optimizar imágenes y subir a Supabase Storage (Buckets) para acelerar la carga masivamente
       const formattedMedia = await Promise.all(
         mediaItems.map(async (m, idx) => {
           const compressedUrl = m.type === 'image' ? await compressImageDataUrl(m.url, 1600, 0.85) : m.url;
+          
+          // Subir al bucket y obtener el link ultraligero
+          const publicUrl = await uploadMediaToSupabase(compressedUrl, m.name || (m.type === 'video' ? 'video.mp4' : 'foto.jpg'));
+
           const itemObj = {
             type: m.type,
-            url: compressedUrl,
+            url: publicUrl,
             name: m.name || (m.type === 'video' ? 'Video' : 'Foto')
           };
+          
           if (idx === 0) {
             if (price.trim()) itemObj.price = price.trim();
             if (description.trim()) itemObj.description = description.trim();

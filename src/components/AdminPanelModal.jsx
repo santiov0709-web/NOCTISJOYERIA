@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Lock, KeyRound, Plus, Trash2, Copy, Check, Image as ImageIcon, Video, RefreshCw, ShieldAlert, Sparkles, FolderPlus, Database, Wifi, WifiOff, Edit, RotateCcw } from 'lucide-react';
-import { supabase, isSupabaseConfigured } from '../config/supabase';
+import { supabase, isSupabaseConfigured, uploadMediaToSupabase } from '../config/supabase';
 import { INITIAL_GALLERY_ITEMS } from '../config/initialProducts';
 import {
   getAllProductsDB,
@@ -244,12 +244,16 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
     try {
       const finalCategory = category === 'Otro' ? customCategory.trim() || 'Exclusivo' : category;
 
-      // Optimizar fotos en Base64 en segundo plano (HD 1600px)
+      // Optimizar fotos y subir a Supabase Storage
       const processedMedia = await Promise.all(
-        validMedia.map(async (m) => ({
-          type: m.type,
-          url: m.type === 'image' ? await compressImageDataUrl(m.url, 1600, 0.85) : m.url
-        }))
+        validMedia.map(async (m) => {
+          const compressedUrl = m.type === 'image' ? await compressImageDataUrl(m.url, 1600, 0.85) : m.url;
+          const publicUrl = await uploadMediaToSupabase(compressedUrl, m.type === 'video' ? 'video.mp4' : 'foto.jpg');
+          return {
+            type: m.type,
+            url: publicUrl
+          };
+        })
       );
 
       if (editingProductId) {
