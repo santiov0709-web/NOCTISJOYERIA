@@ -5,7 +5,7 @@ export const INITIAL_GALLERY_ITEMS = [
     category: 'Anillos',
     price: '',
     description: 'Colección de anillos de hombre y sellos tallados en Oro 18k ley 750.',
-    tag: '🌟 Destacado',
+    tag: 'Destacado Imperiale',
     spanClass: 'gallery-card--tall',
     media: [
       { type: 'video', url: '/media/anillo1-2.mp4' },
@@ -25,7 +25,7 @@ export const INITIAL_GALLERY_ITEMS = [
     category: 'Pulseras',
     price: '',
     description: 'Pulseras tejidas en hilo rojo de alta durabilidad con balines y neoprenos en Oro 18k.',
-    tag: '✨ Nuevo',
+    tag: 'Nueva Colección 18k',
     spanClass: 'gallery-card--normal',
     media: [
       { type: 'video', url: '/media/manilla1-13.mp4' },
@@ -40,7 +40,7 @@ export const INITIAL_GALLERY_ITEMS = [
     category: 'Pulseras',
     price: '',
     description: 'Diseños sobrios y elegantes tejidos en hilo negro con accesorios de Oro 18k.',
-    tag: '🔥 Pieza Única',
+    tag: 'Pieza Única de Autor',
     spanClass: 'gallery-card--normal',
     media: [
       { type: 'video', url: '/media/manilla2-18.mp4' },
@@ -56,7 +56,7 @@ export const INITIAL_GALLERY_ITEMS = [
     category: 'Pulseras',
     price: '',
     description: 'Piezas artesanales de autor elaboradas a mano en Oro 18k ley 750.',
-    tag: '💎 Edición Limitada',
+    tag: 'Edición Limitada 18k',
     spanClass: 'gallery-card--wide',
     media: [
       { type: 'video', url: '/media/manilla3-23.mp4' },
@@ -72,7 +72,7 @@ export const INITIAL_GALLERY_ITEMS = [
     category: 'Alta Joyería',
     price: '',
     description: 'Alta joyería Noctis. Joyas exclusivas en Oro de 18 Kilates con acabados de alta gama.',
-    tag: '🌟 Destacado',
+    tag: 'Destacado Imperiale',
     spanClass: 'gallery-card--wide',
     media: [
       { type: 'image', url: '/media/nocti-24.jpeg' },

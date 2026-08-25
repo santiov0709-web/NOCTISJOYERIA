@@ -32,7 +32,7 @@ export default function AdminApp() {
   const [customCategory, setCustomCategory] = useState('');
   const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
-  const [productTag, setProductTag] = useState('🌟 Destacado');
+  const [productTag, setProductTag] = useState('Destacado Imperiale');
   const [spanClass, setSpanClass] = useState('gallery-card--normal');
 
   // Media Items State: [{ id, type: 'image'|'video', url, name }]
@@ -220,7 +220,7 @@ export default function AdminApp() {
     }
     setPrice(prod.price || '');
     setDescription(prod.description || '');
-    setProductTag(prod.tag || '🌟 Destacado');
+    setProductTag(prod.tag || 'Destacado Imperiale');
     setSpanClass(prod.spanClass || 'gallery-card--normal');
     setMediaItems(
       (prod.media || []).map((m, idx) => ({
@@ -241,7 +241,7 @@ export default function AdminApp() {
     setCustomCategory('');
     setPrice('');
     setDescription('');
-    setProductTag('🌟 Destacado');
+    setProductTag('Destacado Imperiale');
     setSpanClass('gallery-card--normal');
     setMediaItems([]);
   };
@@ -524,21 +524,21 @@ export default function AdminApp() {
               style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '600', background: panelTheme === 'emerald' ? 'rgba(0,255,179,0.2)' : 'transparent', border: panelTheme === 'emerald' ? '1px solid #00ffb3' : 'none', color: panelTheme === 'emerald' ? '#00ffb3' : 'rgba(255,255,255,0.6)', cursor: 'pointer' }}
               title="Tema Esmeralda Noctis"
             >
-              🌿 Esmeralda
+              Esmeralda
             </button>
             <button
               onClick={() => setPanelTheme('gold')}
               style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '600', background: panelTheme === 'gold' ? 'rgba(212,175,55,0.25)' : 'transparent', border: panelTheme === 'gold' ? '1px solid #d4af37' : 'none', color: panelTheme === 'gold' ? '#f5d77f' : 'rgba(255,255,255,0.6)', cursor: 'pointer' }}
               title="Tema Imperial Oro 18k"
             >
-              ✨ Oro 18k
+              Oro 18k
             </button>
             <button
               onClick={() => setPanelTheme('obsidian')}
               style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '600', background: panelTheme === 'obsidian' ? 'rgba(255,255,255,0.2)' : 'transparent', border: panelTheme === 'obsidian' ? '1px solid #fff' : 'none', color: panelTheme === 'obsidian' ? '#ffffff' : 'rgba(255,255,255,0.6)', cursor: 'pointer' }}
               title="Tema Obsidiana Oscura"
             >
-              🌙 Obsidiana
+              Obsidiana
             </button>
           </div>
 
@@ -863,10 +863,10 @@ export default function AdminApp() {
                         onChange={(e) => setProductTag(e.target.value)}
                         style={{ width: '100%', padding: '14px 16px', background: '#0e121a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
                       >
-                        <option value="🌟 Destacado">🌟 Destacado</option>
-                        <option value="✨ Nuevo">✨ Nuevo Lanzamiento</option>
-                        <option value="💎 Edición Limitada">💎 Edición Limitada</option>
-                        <option value="🔥 Pieza Única">🔥 Pieza Única de Autor</option>
+                        <option value="Destacado Imperiale">Destacado Imperiale</option>
+                        <option value="Nueva Colección 18k">Nueva Colección 18k</option>
+                        <option value="Edición Limitada 18k">Edición Limitada 18k</option>
+                        <option value="Pieza Única de Autor">Pieza Única de Autor</option>
                       </select>
                     </div>
                   </div>
@@ -994,8 +994,8 @@ export default function AdminApp() {
                         onChange={(e) => setUrlType(e.target.value)}
                         style={{ padding: '10px 14px', background: '#0e121a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
                       >
-                        <option value="image">📷 Foto URL</option>
-                        <option value="video">🎥 Video URL</option>
+                        <option value="image">Foto URL</option>
+                        <option value="video">Video URL</option>
                       </select>
 
                       <input
@@ -1043,13 +1043,13 @@ export default function AdminApp() {
 
                               {/* Badge de tipo */}
                               <span style={{ position: 'absolute', top: '6px', left: '6px', background: 'rgba(0,0,0,0.75)', padding: '2px 6px', borderRadius: '4px', fontSize: '9px', color: '#fff', fontWeight: '600' }}>
-                                {item.type === 'video' ? '🎥 Video' : '📷 Foto'} #{idx + 1}
+                                {item.type === 'video' ? 'Video' : 'Foto'} #{idx + 1}
                               </span>
 
                               {/* Portada Badge */}
                               {idx === 0 && (
                                 <span style={{ position: 'absolute', bottom: '6px', left: '6px', background: '#d4af37', color: '#000', padding: '2px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: '700' }}>
-                                  ⭐ Portada
+                                  Portada
                                 </span>
                               )}
 
@@ -1091,8 +1091,8 @@ export default function AdminApp() {
                     {isSaving
                       ? 'Guardando Cambios...'
                       : editingProductId
-                      ? '💾 Guardar Cambios en la Joya'
-                      : '✨ Publicar Joya en la Galería'}
+                      ? 'Guardar Cambios en la Joya'
+                      : 'Publicar Joya en la Galería'}
                   </button>
                 </form>
               )}

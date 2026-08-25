@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { useState } from 'react';
-import { X, ChevronLeft, ChevronRight, Play } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Play, MessageCircle } from 'lucide-react';
 import { getWaUrl } from '../config/whatsapp';
 
 export default function JewelryModal({ item, open, onClose }) {
@@ -79,7 +79,7 @@ export default function JewelryModal({ item, open, onClose }) {
 
             {/* Counter badge */}
             <div className="modal-counter-badge">
-              {currentIndex + 1} / {mediaList.length} {currentMedia.type === 'video' ? '🎥 Video 18k' : '📷 Foto 18k'}
+              {currentIndex + 1} / {mediaList.length} · {currentMedia.type === 'video' ? 'Video 18k' : 'Foto 18k'}
             </div>
           </div>
 
@@ -136,8 +136,9 @@ export default function JewelryModal({ item, open, onClose }) {
               target="_blank"
               rel="noopener noreferrer"
               className="modal-wa-btn btn-wa-luxury"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
-              💬 Pedir Asesoría de esta Joya
+              <MessageCircle size={16} /> Pedir Asesoría de esta Joya
             </a>
           </div>
         </motion.div>
