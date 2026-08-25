@@ -166,6 +166,9 @@ export default function GallerySection() {
       try {
         localStorage.setItem('noctis_custom_products', JSON.stringify(supabaseFormatted));
       } catch (e) {}
+
+      // Avisar al Preloader que ya todo el catálogo está listo para mostrarse
+      window.dispatchEvent(new Event('noctis_supabase_loaded'));
     } else {
       // Fallback offline si Supabase falla o no está configurado
       try {
@@ -178,6 +181,9 @@ export default function GallerySection() {
         
         setItems(Array.from(combinedMap.values()));
       } catch (e) {}
+      
+      // Avisar al Preloader incluso si falla Supabase para no dejarlo colgado
+      window.dispatchEvent(new Event('noctis_supabase_loaded'));
     }
   };
 
