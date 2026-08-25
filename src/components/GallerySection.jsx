@@ -193,7 +193,13 @@ export default function GallerySection() {
         .subscribe();
     }
 
+    // Polling automático: Forzar recarga cada 10 segundos
+    const pollInterval = setInterval(() => {
+      loadGalleryProducts();
+    }, 10000);
+
     return () => {
+      clearInterval(pollInterval);
       window.removeEventListener('noctis_products_updated', handleLocalUpdate);
       window.removeEventListener('storage', handleLocalUpdate);
       if (channel && supabase) {

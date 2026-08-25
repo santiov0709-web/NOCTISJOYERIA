@@ -109,7 +109,7 @@ export default function AdminApp() {
     }
     loadProducts();
 
-    // Supabase Realtime Subscription
+    // Supabase Realtime Subscription (si está activo en dashboard)
     let channel;
     if (isSupabaseConfigured && supabase) {
       channel = supabase
@@ -120,7 +120,13 @@ export default function AdminApp() {
         .subscribe();
     }
 
+    // Polling automático: Forzar recarga cada 10 segundos (No requiere configuración manual)
+    const pollInterval = setInterval(() => {
+      loadProducts();
+    }, 10000);
+
     return () => {
+      clearInterval(pollInterval);
       if (channel && supabase) {
         supabase.removeChannel(channel);
       }
