@@ -57,6 +57,7 @@ function CardCarousel({ item, onOpenModal }) {
             muted
             loop
             playsInline
+            webkit-playsinline="true"
             className="gallery-card-img"
           />
         ) : (

@@ -609,7 +609,7 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
                         <div key={prod.id} className="admin-custom-card">
                           <div className="admin-custom-card-preview" style={{ pointerEvents: 'none' }}>
                             {prod.media[0]?.type === 'video' ? (
-                              <video src={prod.media[0]?.url} autoPlay muted loop className="preview-media" style={{ pointerEvents: 'none' }} />
+                              <video src={prod.media[0]?.url} autoPlay muted loop playsInline webkit-playsinline="true" className="preview-media" style={{ pointerEvents: 'none' }} />
                             ) : (
                               <img src={prod.media[0]?.url} alt={prod.name} className="preview-media" style={{ pointerEvents: 'none' }} />
                             )}

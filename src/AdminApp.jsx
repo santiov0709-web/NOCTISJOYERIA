@@ -1036,7 +1036,7 @@ export default function AdminApp() {
                               }}
                             >
                               {item.type === 'video' ? (
-                                <video src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} autoPlay muted loop />
+                                <video src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} autoPlay muted loop playsInline webkit-playsinline="true" />
                               ) : (
                                 <img src={item.url} alt={`preview-${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                               )}
@@ -1182,7 +1182,7 @@ export default function AdminApp() {
                           {/* Preview Media */}
                           <div style={{ height: '160px', position: 'relative', background: '#000', pointerEvents: 'none' }}>
                             {prod.media[0]?.type === 'video' ? (
-                              <video src={prod.media[0]?.url} autoPlay muted loop style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
+                              <video src={prod.media[0]?.url} autoPlay muted loop playsInline webkit-playsinline="true" style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
                             ) : (
                               <img src={prod.media[0]?.url} alt={prod.name} style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
                             )}
@@ -1263,7 +1263,7 @@ export default function AdminApp() {
                             <tr key={prod.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: editingProductId === prod.id ? 'rgba(0,255,179,0.08)' : 'transparent' }}>
                               <td style={{ padding: '12px 16px', width: '70px', pointerEvents: 'none' }}>
                                 {prod.media[0]?.type === 'video' ? (
-                                  <video src={prod.media[0]?.url} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(212,175,55,0.3)', pointerEvents: 'none' }} autoPlay muted loop />
+                                  <video src={prod.media[0]?.url} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(212,175,55,0.3)', pointerEvents: 'none' }} autoPlay muted loop playsInline webkit-playsinline="true" />
                                 ) : (
                                   <img src={prod.media[0]?.url} alt={prod.name} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(212,175,55,0.3)', pointerEvents: 'none' }} />
                                 )}

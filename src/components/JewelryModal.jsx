@@ -53,6 +53,7 @@ export default function JewelryModal({ item, open, onClose }) {
                 muted
                 loop
                 playsInline
+                webkit-playsinline="true"
                 controls
                 className="modal-media"
               />
