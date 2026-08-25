@@ -4,7 +4,7 @@ import { X, Lock, KeyRound, Plus, Trash2, Copy, Check, Image as ImageIcon, Video
 import { supabase, isSupabaseConfigured } from '../config/supabase';
 import { INITIAL_GALLERY_ITEMS } from '../config/initialProducts';
 
-const DEFAULT_PIN = import.meta.env.VITE_ADMIN_PIN || '1804';
+const DEFAULT_PIN = import.meta.env.VITE_ADMIN_PIN || 'BRAYAN2323';
 const STORAGE_KEY = 'noctis_custom_products';
 
 export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
