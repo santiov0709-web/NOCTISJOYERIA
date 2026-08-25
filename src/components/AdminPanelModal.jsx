@@ -3,18 +3,24 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Lock, KeyRound, Plus, Trash2, Copy, Check, Image as ImageIcon, Video, RefreshCw, ShieldAlert, Sparkles, FolderPlus, Database, Wifi, WifiOff, Edit, RotateCcw } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../config/supabase';
 import { INITIAL_GALLERY_ITEMS } from '../config/initialProducts';
+import {
+  getAllProductsDB,
+  saveProductDB,
+  saveAllProductsDB,
+  deleteProductDB
+} from '../config/indexedDBStorage';
 
 const DEFAULT_PIN = import.meta.env.VITE_ADMIN_PIN || 'BRAYAN2323';
 const STORAGE_KEY = 'noctis_custom_products';
 
-const withTimeout = (promise, ms = 6000) => {
+const withTimeout = (promise, ms = 20000) => {
   return Promise.race([
     promise,
     new Promise((_, reject) => setTimeout(() => reject(new Error('Petición a la nube cancelada por tiempo de espera')), ms))
   ]);
 };
 
-const compressImageDataUrl = (dataUrl, maxDimension = 1200, quality = 0.82) => {
+const compressImageDataUrl = (dataUrl, maxDimension = 1600, quality = 0.85) => {
   return new Promise((resolve) => {
     if (!dataUrl || !dataUrl.startsWith('data:image')) {
       return resolve(dataUrl);
@@ -103,6 +109,13 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
       }
     }
 
+    let indexedList = [];
+    try {
+      indexedList = await getAllProductsDB();
+    } catch (e) {
+      console.error('Error al cargar de IndexedDB:', e);
+    }
+
     let storageList = [];
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -116,9 +129,12 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
     const combinedMap = new Map();
     INITIAL_GALLERY_ITEMS.forEach(item => combinedMap.set(item.id, item));
     storageList.forEach(item => combinedMap.set(item.id, item));
+    indexedList.forEach(item => combinedMap.set(item.id, item));
     supabaseList.forEach(item => combinedMap.set(item.id, item));
 
-    setCustomProducts(Array.from(combinedMap.values()));
+    const finalProducts = Array.from(combinedMap.values());
+    setCustomProducts(finalProducts);
+    await saveAllProductsDB(finalProducts);
   };
 
   const handlePinSubmit = (e) => {
@@ -222,11 +238,11 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
     try {
       const finalCategory = category === 'Otro' ? customCategory.trim() || 'Exclusivo' : category;
 
-      // Optimizar fotos en Base64 en segundo plano
+      // Optimizar fotos en Base64 en segundo plano (HD 1600px)
       const processedMedia = await Promise.all(
         validMedia.map(async (m) => ({
           type: m.type,
-          url: m.type === 'image' ? await compressImageDataUrl(m.url) : m.url
+          url: m.type === 'image' ? await compressImageDataUrl(m.url, 1600, 0.85) : m.url
         }))
       );
 
@@ -262,7 +278,12 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
         }
 
         const updatedList = customProducts.map(p => p.id === editingProductId ? updatedProd : p);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+        await saveProductDB(updatedProd);
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+        } catch (err) {
+          console.warn('LocalStorage lleno, guardado en IndexedDB ampliado:', err);
+        }
         setCustomProducts(updatedList);
         setEditingProductId(null);
 
@@ -298,16 +319,17 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
           }
         }
 
-        // 2. Guardar en localStorage
+        // 2. Guardar en IndexedDB & localStorage
+        await saveProductDB(newProd);
         const existing = [newProd, ...customProducts];
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+        } catch (err) {
+          console.warn('LocalStorage lleno, guardado en IndexedDB ampliado:', err);
+        }
         setCustomProducts(existing);
 
-        setSuccessMessage(
-          isSupabaseConfigured
-            ? '✨ ¡Joya guardada en Supabase y publicada en tiempo real!'
-            : '✨ ¡Joya añadida con éxito a la galería local!'
-        );
+        setSuccessMessage('✨ ¡Joya añadida con éxito (Almacenamiento Ilimitado IndexedDB)!');
       }
 
       // Reset form
@@ -343,9 +365,14 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
       }
     }
 
-    // 2. Eliminar en LocalStorage
+    // 2. Eliminar en IndexedDB & LocalStorage
+    await deleteProductDB(id);
     const updated = customProducts.filter(p => p.id !== id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Advertencia localStorage:', e);
+    }
     setCustomProducts(updated);
 
     if (onProductsUpdated) {

@@ -5,10 +5,11 @@ import { ChevronLeft, ChevronRight, Play, Eye, Video, Camera } from 'lucide-reac
 import JewelryModal from './JewelryModal';
 import { supabase, isSupabaseConfigured } from '../config/supabase';
 import { INITIAL_GALLERY_ITEMS } from '../config/initialProducts';
+import { getAllProductsDB } from '../config/indexedDBStorage';
 
 const ease = [0.16, 1, 0.3, 1];
 
-const getCombinedGalleryItems = (supabaseProducts = []) => {
+const getCombinedGalleryItems = (indexedDBProducts = [], supabaseProducts = []) => {
   let customFromStorage = [];
   try {
     const stored = localStorage.getItem('noctis_custom_products');
@@ -24,8 +25,14 @@ const getCombinedGalleryItems = (supabaseProducts = []) => {
   // 1. Static base items
   INITIAL_GALLERY_ITEMS.forEach(item => combinedMap.set(item.id, item));
 
-  // 2. Storage items (override static items if edited)
+  // 2. Storage items
   customFromStorage.forEach(item => combinedMap.set(item.id, item));
+
+  // 3. IndexedDB items (High capacity)
+  indexedDBProducts.forEach(item => combinedMap.set(item.id, item));
+
+  // 4. Supabase cloud items
+  supabaseProducts.forEach(item => combinedMap.set(item.id, item));
 
   return Array.from(combinedMap.values());
 };
@@ -124,38 +131,47 @@ export default function GallerySection() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-60px' });
   const [selectedModal, setSelectedModal] = useState({ open: false, item: null });
-  const [items, setItems] = useState(() => getCombinedGalleryItems([]));
+  const [items, setItems] = useState(() => getCombinedGalleryItems([], []));
 
-  const loadSupabaseProducts = async () => {
-    if (!isSupabaseConfigured || !supabase) return;
+  const loadGalleryProducts = async () => {
+    let indexedList = [];
     try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (!error && data) {
-        const formatted = data.map(item => ({
-          id: item.id,
-          name: item.name,
-          category: item.category,
-          spanClass: item.span_class || item.spanClass,
-          media: item.media,
-          createdAt: item.created_at
-        }));
-        setItems(getCombinedGalleryItems(formatted));
-      }
-    } catch (err) {
-      console.error('Error cargando la galería de Supabase:', err);
+      indexedList = await getAllProductsDB();
+    } catch (e) {
+      console.error('Error leyendo IndexedDB:', e);
     }
+
+    let supabaseFormatted = [];
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!error && data) {
+          supabaseFormatted = data.map(item => ({
+            id: item.id,
+            name: item.name,
+            category: item.category,
+            spanClass: item.span_class || item.spanClass,
+            media: item.media,
+            createdAt: item.created_at
+          }));
+        }
+      } catch (err) {
+        console.error('Error cargando la galería de Supabase:', err);
+      }
+    }
+
+    setItems(getCombinedGalleryItems(indexedList, supabaseFormatted));
   };
 
   useEffect(() => {
-    loadSupabaseProducts();
+    loadGalleryProducts();
 
     const handleLocalUpdate = () => {
-      setItems(getCombinedGalleryItems([]));
-      loadSupabaseProducts();
+      loadGalleryProducts();
     };
 
     window.addEventListener('noctis_products_updated', handleLocalUpdate);
@@ -166,7 +182,7 @@ export default function GallerySection() {
       channel = supabase
         .channel('public:products')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
-          loadSupabaseProducts();
+          loadGalleryProducts();
         })
         .subscribe();
     }

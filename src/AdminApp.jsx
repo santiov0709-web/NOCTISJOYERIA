@@ -9,18 +9,24 @@ import {
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from './config/supabase';
 import { INITIAL_GALLERY_ITEMS } from './config/initialProducts';
+import {
+  getAllProductsDB,
+  saveProductDB,
+  saveAllProductsDB,
+  deleteProductDB
+} from './config/indexedDBStorage';
 
 const DEFAULT_PIN = import.meta.env.VITE_ADMIN_PIN || 'BRAYAN2323';
 const STORAGE_KEY = 'noctis_custom_products';
 
-const withTimeout = (promise, ms = 6000) => {
+const withTimeout = (promise, ms = 20000) => {
   return Promise.race([
     promise,
     new Promise((_, reject) => setTimeout(() => reject(new Error('Petición a la nube cancelada por tiempo de espera')), ms))
   ]);
 };
 
-const compressImageDataUrl = (dataUrl, maxDimension = 1200, quality = 0.82) => {
+const compressImageDataUrl = (dataUrl, maxDimension = 1600, quality = 0.85) => {
   return new Promise((resolve) => {
     if (!dataUrl || !dataUrl.startsWith('data:image')) {
       return resolve(dataUrl);
@@ -83,6 +89,8 @@ export default function AdminApp() {
   const [urlInput, setUrlInput] = useState('');
   const [urlType, setUrlType] = useState('image');
   const [isDragging, setIsDragging] = useState(false);
+  const [isProcessingFiles, setIsProcessingFiles] = useState(false);
+  const [processingMessage, setProcessingMessage] = useState('');
 
   // UI state
   const [customProducts, setCustomProducts] = useState([]);
@@ -129,6 +137,13 @@ export default function AdminApp() {
       }
     }
 
+    let indexedList = [];
+    try {
+      indexedList = await getAllProductsDB();
+    } catch (e) {
+      console.error('Error cargando de IndexedDB:', e);
+    }
+
     let storageList = [];
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -139,13 +154,16 @@ export default function AdminApp() {
       console.error('Error cargando de localStorage:', e);
     }
 
-    // Combine: 1. Initial base items, 2. LocalStorage items, 3. Supabase items
+    // Combine: 1. Initial base items, 2. LocalStorage items, 3. IndexedDB items, 4. Supabase items
     const combinedMap = new Map();
     INITIAL_GALLERY_ITEMS.forEach(item => combinedMap.set(item.id, item));
     storageList.forEach(item => combinedMap.set(item.id, item));
+    indexedList.forEach(item => combinedMap.set(item.id, item));
     supabaseList.forEach(item => combinedMap.set(item.id, item));
 
-    setCustomProducts(Array.from(combinedMap.values()));
+    const finalProducts = Array.from(combinedMap.values());
+    setCustomProducts(finalProducts);
+    await saveAllProductsDB(finalProducts);
   };
 
   const handlePinSubmit = (e) => {
@@ -166,30 +184,46 @@ export default function AdminApp() {
     sessionStorage.removeItem('noctis_admin_authenticated');
   };
 
-  // Multiple File Selection & Upload (Batch Upload)
-  const processFiles = (files) => {
+  // Multiple File Selection & Upload (Batch Upload with Heavy Image Compression)
+  const processFiles = async (files) => {
     const validFiles = Array.from(files);
     if (validFiles.length === 0) return;
 
-    validFiles.forEach((file) => {
+    setIsProcessingFiles(true);
+    setProcessingMessage(`Procesando ${validFiles.length} archivo(s)...`);
+
+    for (let i = 0; i < validFiles.length; i++) {
+      const file = validFiles[i];
       const isVideo = file.type.startsWith('video/');
-      const reader = new FileReader();
+      setProcessingMessage(`Procesando archivo ${i + 1} de ${validFiles.length}: ${file.name}`);
 
-      reader.onload = (e) => {
-        const dataUrl = e.target.result;
-        setMediaItems((prev) => [
-          ...prev,
-          {
-            id: 'media-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
-            type: isVideo ? 'video' : 'image',
-            url: dataUrl,
-            name: file.name
-          }
-        ]);
-      };
+      const dataUrl = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(file);
+      });
 
-      reader.readAsDataURL(file);
-    });
+      if (!dataUrl) continue;
+
+      let finalUrl = dataUrl;
+      if (!isVideo && dataUrl.startsWith('data:image')) {
+        finalUrl = await compressImageDataUrl(dataUrl, 1600, 0.85);
+      }
+
+      setMediaItems((prev) => [
+        ...prev,
+        {
+          id: 'media-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+          type: isVideo ? 'video' : 'image',
+          url: finalUrl,
+          name: file.name
+        }
+      ]);
+    }
+
+    setIsProcessingFiles(false);
+    setProcessingMessage('');
   };
 
   const handleFileInputChange = (e) => {
@@ -305,11 +339,11 @@ export default function AdminApp() {
     try {
       const finalCategory = category === 'Otro' ? customCategory.trim() || 'Exclusivo' : category;
 
-      // Optimizar imágenes en segundo plano
+      // Optimizar imágenes en segundo plano (HD 1600px)
       const formattedMedia = await Promise.all(
         mediaItems.map(async (m) => ({
           type: m.type,
-          url: m.type === 'image' ? await compressImageDataUrl(m.url) : m.url
+          url: m.type === 'image' ? await compressImageDataUrl(m.url, 1600, 0.85) : m.url
         }))
       );
 
@@ -351,7 +385,12 @@ export default function AdminApp() {
         }
 
         const updatedList = customProducts.map(p => p.id === editingProductId ? updatedProd : p);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+        await saveProductDB(updatedProd);
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+        } catch (err) {
+          console.warn('LocalStorage lleno, guardado en IndexedDB ampliado:', err);
+        }
         setCustomProducts(updatedList);
         setEditingProductId(null);
 
@@ -393,16 +432,17 @@ export default function AdminApp() {
           }
         }
 
-        // Save to LocalStorage
+        // Save to IndexedDB (Unlimited Storage) & LocalStorage (Safe Fallback)
+        await saveProductDB(newProd);
         const existing = [newProd, ...customProducts];
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+        } catch (err) {
+          console.warn('LocalStorage lleno, guardado en IndexedDB ampliado:', err);
+        }
         setCustomProducts(existing);
 
-        setSuccessMessage(
-          isSupabaseConfigured
-            ? '✨ ¡Joya guardada en Supabase Cloud y publicada en tiempo real!'
-            : '✨ ¡Joya añadida con éxito al catálogo!'
-        );
+        setSuccessMessage('✨ ¡Joya añadida con éxito al catálogo (Almacenamiento Ilimitado IndexedDB)!');
       }
 
       // Reset Form
@@ -435,8 +475,13 @@ export default function AdminApp() {
       }
     }
 
+    await deleteProductDB(id);
     const updated = customProducts.filter(p => p.id !== id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Advertencia localStorage:', e);
+    }
     setCustomProducts(updated);
     window.dispatchEvent(new Event('noctis_products_updated'));
   };
@@ -1027,13 +1072,27 @@ export default function AdminApp() {
                         transition: 'all 0.2s'
                       }}
                     >
-                      <Upload size={36} color={isDragging ? '#00ffb3' : '#d4af37'} style={{ marginBottom: '10px' }} />
-                      <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: '#fff' }}>
-                        Arrastra y suelta aquí tus fotos o videos
-                      </p>
-                      <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '4px', display: 'block' }}>
-                        Formatos soportados: JPG, PNG, WEBP, MP4, MOV, WEBM (Puedes subir 5, 10 o más de una vez)
-                      </span>
+                      {isProcessingFiles ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                          <RefreshCw size={36} color="#00ffb3" className="animate-spin" style={{ animation: 'spin 1s linear infinite' }} />
+                          <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: '#00ffb3' }}>
+                            {processingMessage || 'Optimizando fotos pesadas...'}
+                          </p>
+                          <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>
+                            Por favor espera un segundo mientras procesamos y comprimimos tus imágenes HD sin perder calidad.
+                          </span>
+                        </div>
+                      ) : (
+                        <>
+                          <Upload size={36} color={isDragging ? '#00ffb3' : '#d4af37'} style={{ marginBottom: '10px' }} />
+                          <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: '#fff' }}>
+                            Arrastra y suelta aquí tus fotos o videos
+                          </p>
+                          <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '4px', display: 'block' }}>
+                            Formatos soportados: JPG, PNG, WEBP, MP4, MOV, WEBM (Soporta fotos pesadas sin límite de cantidad)
+                          </span>
+                        </>
+                      )}
                     </div>
 
                     {/* Opción secundaria: Agregar por URL directa */}
