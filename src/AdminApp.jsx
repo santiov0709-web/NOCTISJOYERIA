@@ -120,17 +120,20 @@ export default function AdminApp() {
           .order('created_at', { ascending: false });
 
         if (!error && data) {
-          supabaseList = data.map(item => ({
-            id: item.id,
-            name: item.name,
-            category: item.category,
-            price: item.price || '',
-            description: item.description || '',
-            tag: item.tag || '',
-            spanClass: item.span_class || item.spanClass || 'gallery-card--normal',
-            media: item.media || [],
-            createdAt: item.created_at
-          }));
+          supabaseList = data.map(item => {
+            const meta = item.media?.[0] || {};
+            return {
+              id: item.id,
+              name: item.name,
+              category: item.category,
+              price: item.price || meta.price || '',
+              description: item.description || meta.description || '',
+              tag: item.tag || meta.tag || '',
+              spanClass: item.span_class || item.spanClass || 'gallery-card--normal',
+              media: item.media || [],
+              createdAt: item.created_at
+            };
+          });
         }
       } catch (e) {
         console.error('Error cargando de Supabase:', e);
@@ -295,9 +298,10 @@ export default function AdminApp() {
       setCategory('Otro');
       setCustomCategory(prod.category);
     }
-    setPrice(prod.price || '');
-    setDescription(prod.description || '');
-    setProductTag(prod.tag || 'Destacado Imperiale');
+    const meta = prod.media?.[0] || {};
+    setPrice(prod.price || meta.price || '');
+    setDescription(prod.description || meta.description || '');
+    setProductTag(prod.tag || meta.tag || 'Destacado Imperiale');
     setSpanClass(prod.spanClass || 'gallery-card--normal');
     setMediaItems(
       (prod.media || []).map((m, idx) => ({
@@ -339,12 +343,22 @@ export default function AdminApp() {
     try {
       const finalCategory = category === 'Otro' ? customCategory.trim() || 'Exclusivo' : category;
 
-      // Optimizar imágenes en segundo plano (HD 1600px)
+      // Optimizar imágenes en segundo plano (HD 1600px) y guardar metadata en JSONB
       const formattedMedia = await Promise.all(
-        mediaItems.map(async (m) => ({
-          type: m.type,
-          url: m.type === 'image' ? await compressImageDataUrl(m.url, 1600, 0.85) : m.url
-        }))
+        mediaItems.map(async (m, idx) => {
+          const compressedUrl = m.type === 'image' ? await compressImageDataUrl(m.url, 1600, 0.85) : m.url;
+          const itemObj = {
+            type: m.type,
+            url: compressedUrl,
+            name: m.name || (m.type === 'video' ? 'Video' : 'Foto')
+          };
+          if (idx === 0) {
+            if (price.trim()) itemObj.price = price.trim();
+            if (description.trim()) itemObj.description = description.trim();
+            if (productTag) itemObj.tag = productTag;
+          }
+          return itemObj;
+        })
       );
 
       if (editingProductId) {
@@ -371,9 +385,6 @@ export default function AdminApp() {
                 .update({
                   name: updatedProd.name,
                   category: updatedProd.category,
-                  price: updatedProd.price,
-                  description: updatedProd.description,
-                  tag: updatedProd.tag,
                   span_class: updatedProd.spanClass,
                   media: updatedProd.media
                 })
@@ -418,9 +429,6 @@ export default function AdminApp() {
                   id: newProd.id,
                   name: newProd.name,
                   category: newProd.category,
-                  price: newProd.price,
-                  description: newProd.description,
-                  tag: newProd.tag,
                   span_class: newProd.spanClass,
                   media: newProd.media,
                   created_at: newProd.createdAt
@@ -442,7 +450,7 @@ export default function AdminApp() {
         }
         setCustomProducts(existing);
 
-        setSuccessMessage('✨ ¡Joya añadida con éxito al catálogo (Almacenamiento Ilimitado IndexedDB)!');
+        setSuccessMessage('✨ ¡Joya añadida con éxito al catálogo y publicada en vivo!');
       }
 
       // Reset Form

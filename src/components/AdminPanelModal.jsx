@@ -95,14 +95,20 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
           .order('created_at', { ascending: false });
 
         if (!error && data) {
-          supabaseList = data.map(item => ({
-            id: item.id,
-            name: item.name,
-            category: item.category,
-            spanClass: item.span_class || item.spanClass,
-            media: item.media,
-            createdAt: item.created_at
-          }));
+          supabaseList = data.map(item => {
+            const meta = item.media?.[0] || {};
+            return {
+              id: item.id,
+              name: item.name,
+              category: item.category,
+              price: item.price || meta.price || '',
+              description: item.description || meta.description || '',
+              tag: item.tag || meta.tag || '',
+              spanClass: item.span_class || item.spanClass || 'gallery-card--normal',
+              media: item.media || [],
+              createdAt: item.created_at
+            };
+          });
         }
       } catch (e) {
         console.error('Error al cargar de Supabase:', e);

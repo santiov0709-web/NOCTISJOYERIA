@@ -150,14 +150,20 @@ export default function GallerySection() {
           .order('created_at', { ascending: false });
 
         if (!error && data) {
-          supabaseFormatted = data.map(item => ({
-            id: item.id,
-            name: item.name,
-            category: item.category,
-            spanClass: item.span_class || item.spanClass,
-            media: item.media,
-            createdAt: item.created_at
-          }));
+          supabaseFormatted = data.map(item => {
+            const meta = item.media?.[0] || {};
+            return {
+              id: item.id,
+              name: item.name,
+              category: item.category,
+              price: item.price || meta.price || '',
+              description: item.description || meta.description || '',
+              tag: item.tag || meta.tag || '',
+              spanClass: item.span_class || item.spanClass || 'gallery-card--normal',
+              media: item.media || [],
+              createdAt: item.created_at
+            };
+          });
         }
       } catch (err) {
         console.error('Error cargando la galería de Supabase:', err);
