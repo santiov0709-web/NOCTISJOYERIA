@@ -4,7 +4,8 @@ import {
   Lock, KeyRound, Plus, Trash2, Copy, Check,
   Image as ImageIcon, Video, RefreshCw, ShieldAlert,
   Sparkles, FolderPlus, Database, Wifi, WifiOff, ExternalLink, ArrowLeft,
-  Upload, Search, Tag, DollarSign, FileText, Eye, Layers, Star, X, Edit, RotateCcw
+  Upload, Search, Tag, DollarSign, FileText, Eye, Layers, Star, X, Edit, RotateCcw,
+  Palette, LayoutGrid, List, Zap, Crown, Sliders
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from './config/supabase';
 import { INITIAL_GALLERY_ITEMS } from './config/initialProducts';
@@ -17,8 +18,12 @@ export default function AdminApp() {
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
 
+  // Custom Personalization State
+  const [panelTheme, setPanelTheme] = useState('emerald'); // 'emerald' | 'gold' | 'obsidian'
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'table'
+
   // Tabs
-  const [activeTab, setActiveTab] = useState('add'); // 'add' | 'list' | 'export'
+  const [activeTab, setActiveTab] = useState('add'); // 'add' | 'list'
 
   // Product Form State
   const [editingProductId, setEditingProductId] = useState(null);
@@ -407,43 +412,143 @@ export default function AdminApp() {
 
   const totalMediaUploaded = customProducts.reduce((acc, p) => acc + (p.media?.length || 0), 0);
 
+  const applyQuickTemplate = (type) => {
+    if (type === 'rolex') {
+      setProductName('Anillo Rolex Imperial en Oro 18k Ley 750');
+      setCategory('Anillos');
+      setPrice('$3.200.000 COP');
+      setDescription('Anillo estilo Rolex elaborado en Oro Amarillo de 18 Kilates con acabados pulidos de alta precisión. Peso aprox 9.5g.');
+      setProductTag('🌟 Destacado');
+      setSpanClass('gallery-card--tall');
+    } else if (type === 'hilo-rojo') {
+      setProductName('Pulsera en Hilo Rojo con Balines & Neopreno 18k');
+      setCategory('Pulseras');
+      setPrice('$480.000 COP');
+      setDescription('Tejido artesanal ajustable en hilo rojo de máxima resistencia con balines tallados en Oro 18k.');
+      setProductTag('✨ Nuevo');
+      setSpanClass('gallery-card--normal');
+    } else if (type === 'cadena-cubana') {
+      setProductName('Cadena Tejido Cubano 18k con Dije Exclusivo');
+      setCategory('Cadenas');
+      setPrice('$5.800.000 COP');
+      setDescription('Cadena de eslabón cubano macizo en Oro 18k ley 750 de 55cm. Certificado de autenticidad total.');
+      setProductTag('🔥 Pieza Única');
+      setSpanClass('gallery-card--wide');
+    } else if (type === 'esmeralda') {
+      setProductName('Dije Esmeralda Colombiana en Gota y Diamantes 18k');
+      setCategory('Esmeraldas');
+      setPrice('Consultar Asesor');
+      setDescription('Esmeralda natural colombiana corte gota montada en bisel de Oro Blanco y Amarillo de 18 Kilates.');
+      setProductTag('💎 Edición Limitada');
+      setSpanClass('gallery-card--normal');
+    }
+  };
+
+  const getThemeStyles = () => {
+    if (panelTheme === 'gold') {
+      return {
+        bg: 'linear-gradient(180deg, #110e06 0%, #070502 100%)',
+        border: 'rgba(212, 175, 55, 0.45)',
+        headerBg: 'rgba(20, 16, 7, 0.95)',
+        accent: '#f5d77f',
+        cardBg: 'rgba(24, 20, 10, 0.9)',
+        glow: 'rgba(212, 175, 55, 0.3)'
+      };
+    }
+    if (panelTheme === 'obsidian') {
+      return {
+        bg: 'linear-gradient(180deg, #060608 0%, #020203 100%)',
+        border: 'rgba(255, 255, 255, 0.2)',
+        headerBg: 'rgba(10, 10, 15, 0.95)',
+        accent: '#ffffff',
+        cardBg: 'rgba(12, 12, 18, 0.9)',
+        glow: 'rgba(255, 255, 255, 0.15)'
+      };
+    }
+    return {
+      bg: 'linear-gradient(180deg, #040905 0%, #020503 100%)',
+      border: 'rgba(212, 175, 55, 0.3)',
+      headerBg: 'rgba(6, 17, 9, 0.95)',
+      accent: '#00ffb3',
+      cardBg: 'rgba(14, 22, 16, 0.9)',
+      glow: 'rgba(0, 255, 179, 0.2)'
+    };
+  };
+
+  const tStyle = getThemeStyles();
+
   return (
-    <div style={{ minHeight: '100vh', background: '#05070a', color: '#fff', display: 'flex', flexDirection: 'column', fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: tStyle.bg, color: '#fff', display: 'flex', flexDirection: 'column', fontFamily: "'Inter', sans-serif", transition: 'all 0.4s' }}>
       
-      {/* Top Header */}
+      {/* Top Header Personalizado Noctis */}
       <header style={{
-        padding: '16px 28px',
-        background: 'rgba(10, 13, 18, 0.95)',
+        padding: '14px 28px',
+        background: tStyle.headerBg,
         backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(212, 175, 55, 0.3)',
+        borderBottom: `1px solid ${tStyle.border}`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         position: 'sticky',
         top: 0,
-        zIndex: 100
+        zIndex: 100,
+        boxShadow: `0 4px 30px ${tStyle.glow}`
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#d4af37', textDecoration: 'none', fontSize: '13px', fontWeight: '500', transition: 'all 0.2s' }}>
-            <ArrowLeft size={16} /> Volver a la Tienda
+          <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#d4af37', textDecoration: 'none', fontSize: '13px', fontWeight: '600', background: 'rgba(212,175,55,0.1)', padding: '6px 14px', borderRadius: '8px', border: '1px solid rgba(212,175,55,0.3)', transition: 'all 0.2s' }}>
+            <ArrowLeft size={16} /> Volver a Tienda
           </a>
           <span style={{ color: 'rgba(255,255,255,0.15)' }}>|</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Sparkles size={20} color="#d4af37" />
-            <h1 className="font-cinzel" style={{ fontSize: '16px', margin: 0, letterSpacing: '0.12em', color: '#f5d77f', fontWeight: '700' }}>
-              NOCTIS JOYERÍA · VAULT PRIVADO
-            </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'rgba(212,175,55,0.15)', border: '1px solid #d4af37', overflow: 'hidden', padding: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <img src="/logo-noctis.png" alt="Noctis Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            </div>
+            <div>
+              <h1 className="font-cinzel" style={{ fontSize: '15px', margin: 0, letterSpacing: '0.12em', color: '#f5d77f', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                NOCTIS JOYERÍA · VAULT PRIVADO <Crown size={14} color="#d4af37" />
+              </h1>
+              <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', letterSpacing: '0.08em' }}>
+                GESTIÓN EXCLUSIVA ORO 18K · MEDELLÍN
+              </span>
+            </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        {/* Theme Selector & Status */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          {/* Custom Theme Switcher */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(0,0,0,0.4)', padding: '4px 8px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.12)' }}>
+            <Palette size={13} color="#d4af37" style={{ marginLeft: '4px' }} />
+            <button
+              onClick={() => setPanelTheme('emerald')}
+              style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '600', background: panelTheme === 'emerald' ? 'rgba(0,255,179,0.2)' : 'transparent', border: panelTheme === 'emerald' ? '1px solid #00ffb3' : 'none', color: panelTheme === 'emerald' ? '#00ffb3' : 'rgba(255,255,255,0.6)', cursor: 'pointer' }}
+              title="Tema Esmeralda Noctis"
+            >
+              🌿 Esmeralda
+            </button>
+            <button
+              onClick={() => setPanelTheme('gold')}
+              style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '600', background: panelTheme === 'gold' ? 'rgba(212,175,55,0.25)' : 'transparent', border: panelTheme === 'gold' ? '1px solid #d4af37' : 'none', color: panelTheme === 'gold' ? '#f5d77f' : 'rgba(255,255,255,0.6)', cursor: 'pointer' }}
+              title="Tema Imperial Oro 18k"
+            >
+              ✨ Oro 18k
+            </button>
+            <button
+              onClick={() => setPanelTheme('obsidian')}
+              style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '600', background: panelTheme === 'obsidian' ? 'rgba(255,255,255,0.2)' : 'transparent', border: panelTheme === 'obsidian' ? '1px solid #fff' : 'none', color: panelTheme === 'obsidian' ? '#ffffff' : 'rgba(255,255,255,0.6)', cursor: 'pointer' }}
+              title="Tema Obsidiana Oscura"
+            >
+              🌙 Obsidiana
+            </button>
+          </div>
+
           {isSupabaseConfigured ? (
             <span className="badge-supabase-active" style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(0,255,179,0.12)', border: '1px solid rgba(0,255,179,0.3)', color: '#00ffb3' }}>
-              <Wifi size={13} /> Supabase Cloud Conectado
+              <Wifi size={13} /> Supabase En Vivo
             </span>
           ) : (
             <span className="badge-supabase-offline" style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,170,0,0.12)', border: '1px solid rgba(255,170,0,0.3)', color: '#ffaa00' }}>
-              <WifiOff size={13} /> Modo Local (LocalStorage)
+              <WifiOff size={13} /> Modo Local
             </span>
           )}
 
@@ -456,7 +561,8 @@ export default function AdminApp() {
       </header>
 
       {/* Body Container */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '36px 20px', maxWidth: '1200px', width: '100%', margin: '0 auto' }}>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '36px 20px', maxWidth: '1240px', width: '100%', margin: '0 auto' }}>
+        
         
         {!isAuthenticated ? (
           /* Pantalla de Bloqueo / Desbloqueo por PIN */
@@ -692,6 +798,47 @@ export default function AdminApp() {
                       <Check size={18} /> {successMessage}
                     </motion.div>
                   )}
+
+                  {/* PLANTILLAS RÁPIDAS NOCTIS */}
+                  <div style={{ background: 'rgba(212, 175, 55, 0.06)', border: '1px solid rgba(212, 175, 55, 0.25)', borderRadius: '14px', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#f5d77f', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Zap size={14} color="#d4af37" /> Plantillas Rápida de Joyas Frecuentes
+                      </span>
+                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Rellena datos clave con 1 clic</span>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => applyQuickTemplate('rolex')}
+                        style={{ padding: '8px 14px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.3)', color: '#fff', fontSize: '12px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}
+                      >
+                        👑 Anillo Rolex Imperial 18k
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => applyQuickTemplate('hilo-rojo')}
+                        style={{ padding: '8px 14px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.3)', color: '#fff', fontSize: '12px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}
+                      >
+                        🔴 Pulsera Hilo Rojo Balines
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => applyQuickTemplate('cadena-cubana')}
+                        style={{ padding: '8px 14px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.3)', color: '#fff', fontSize: '12px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}
+                      >
+                        🔗 Cadena Cubana 18k
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => applyQuickTemplate('esmeralda')}
+                        style={{ padding: '8px 14px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(0,255,179,0.3)', color: '#00ffb3', fontSize: '12px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}
+                      >
+                        💎 Dije Esmeralda Colombiana
+                      </button>
+                    </div>
+                  </div>
 
                   {/* Fila 1: Nombre y Categoría */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
@@ -974,6 +1121,46 @@ export default function AdminApp() {
                     )}
                   </div>
 
+                    {/* VISTA PREVIA EN VIVO DE LA TARJETA */}
+                    {productName.trim() && (
+                      <div style={{ background: 'rgba(14, 22, 16, 0.6)', border: '1px dashed rgba(212, 175, 55, 0.4)', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#f5d77f', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <Eye size={14} color="#00ffb3" /> Previsualización en Vivo (Así lucirá en la web):
+                        </span>
+
+                        <div style={{ background: '#0a0d13', border: '1px solid rgba(212, 175, 55, 0.3)', borderRadius: '14px', overflow: 'hidden', maxWidth: '320px', boxShadow: '0 10px 30px rgba(0,0,0,0.6)' }}>
+                          <div style={{ height: '180px', position: 'relative', background: '#000' }}>
+                            {mediaItems[0]?.url ? (
+                              mediaItems[0]?.type === 'video' ? (
+                                <video src={mediaItems[0]?.url} autoPlay muted loop style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              ) : (
+                                <img src={mediaItems[0]?.url} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              )
+                            ) : (
+                              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>
+                                (Sin Foto/Video)
+                              </div>
+                            )}
+
+                            <span style={{ position: 'absolute', top: '8px', left: '8px', background: 'rgba(212,175,55,0.9)', color: '#000', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: '700' }}>
+                              {productTag}
+                            </span>
+                          </div>
+
+                          <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <span style={{ fontSize: '11px', color: '#d4af37', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: '700' }}>
+                              {category === 'Otro' ? customCategory || 'Exclusivo' : category} · Oro 18k
+                            </span>
+                            <h4 style={{ margin: 0, fontSize: '15px', color: '#fff', fontWeight: '600' }}>
+                              {productName}
+                            </h4>
+                            {price && <span style={{ fontSize: '13px', color: '#00ffb3', fontWeight: '700' }}>{price}</span>}
+                            {description && <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', margin: 0 }}>{description}</p>}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                   {/* Submit Button */}
                   <button
                     type="submit"
@@ -1006,7 +1193,7 @@ export default function AdminApp() {
               {activeTab === 'list' && (
                 <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   
-                  {/* Search and Filters Header */}
+                  {/* Search, Filters and View Mode Header */}
                   <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ position: 'relative', minWidth: '260px', flex: 1 }}>
                       <Search size={16} color="#888" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
@@ -1017,6 +1204,24 @@ export default function AdminApp() {
                         onChange={(e) => setSearchQuery(e.target.value)}
                         style={{ width: '100%', padding: '12px 14px 12px 42px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
                       />
+                    </div>
+
+                    {/* View Mode Toggle Button */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.4)', padding: '4px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)' }}>
+                      <button
+                        onClick={() => setViewMode('grid')}
+                        style={{ padding: '6px 12px', borderRadius: '8px', border: 'none', background: viewMode === 'grid' ? 'rgba(212,175,55,0.25)' : 'transparent', color: viewMode === 'grid' ? '#f5d77f' : 'rgba(255,255,255,0.5)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '600' }}
+                        title="Vista de Cuadrícula Visual"
+                      >
+                        <LayoutGrid size={15} /> Tarjetas HD
+                      </button>
+                      <button
+                        onClick={() => setViewMode('table')}
+                        style={{ padding: '6px 12px', borderRadius: '8px', border: 'none', background: viewMode === 'table' ? 'rgba(212,175,55,0.25)' : 'transparent', color: viewMode === 'table' ? '#f5d77f' : 'rgba(255,255,255,0.5)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '600' }}
+                        title="Vista de Lista Administradora"
+                      >
+                        <List size={15} /> Lista Tabla
+                      </button>
                     </div>
 
                     <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
@@ -1041,7 +1246,7 @@ export default function AdminApp() {
                     </div>
                   </div>
 
-                  {/* Items Grid */}
+                  {/* Items Grid or Table View */}
                   {filteredProducts.length === 0 ? (
                     <div style={{ padding: '60px', textAlign: 'center', color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)' }}>
                       <Database size={44} color="#555" style={{ marginBottom: '12px' }} />
@@ -1051,7 +1256,7 @@ export default function AdminApp() {
                         + Agregar joya ahora
                       </button>
                     </div>
-                  ) : (
+                  ) : viewMode === 'grid' ? (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }}>
                       {filteredProducts.map((prod) => (
                         <div
@@ -1130,6 +1335,58 @@ export default function AdminApp() {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  ) : (
+                    /* Vista Tabla Administradora Compacta */
+                    <div style={{ overflowX: 'auto', background: 'rgba(10,13,18,0.6)', borderRadius: '14px', border: '1px solid rgba(212,175,55,0.2)' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
+                        <thead>
+                          <tr style={{ background: 'rgba(212,175,55,0.1)', borderBottom: '1px solid rgba(212,175,55,0.2)', color: '#f5d77f' }}>
+                            <th style={{ padding: '14px 16px' }}>Portada</th>
+                            <th style={{ padding: '14px 16px' }}>Nombre de la Joya</th>
+                            <th style={{ padding: '14px 16px' }}>Categoría</th>
+                            <th style={{ padding: '14px 16px' }}>Precio</th>
+                            <th style={{ padding: '14px 16px' }}>Archivos</th>
+                            <th style={{ padding: '14px 16px', textAlign: 'right' }}>Acciones</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredProducts.map((prod) => (
+                            <tr key={prod.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: editingProductId === prod.id ? 'rgba(0,255,179,0.08)' : 'transparent' }}>
+                              <td style={{ padding: '12px 16px', width: '70px' }}>
+                                {prod.media[0]?.type === 'video' ? (
+                                  <video src={prod.media[0]?.url} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(212,175,55,0.3)' }} autoPlay muted loop />
+                                ) : (
+                                  <img src={prod.media[0]?.url} alt={prod.name} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(212,175,55,0.3)' }} />
+                                )}
+                              </td>
+                              <td style={{ padding: '12px 16px', fontWeight: '600', color: '#fff' }}>
+                                {prod.name}
+                                {prod.tag && <span style={{ marginLeft: '8px', fontSize: '10px', background: 'rgba(212,175,55,0.2)', color: '#f5d77f', padding: '2px 6px', borderRadius: '4px' }}>{prod.tag}</span>}
+                              </td>
+                              <td style={{ padding: '12px 16px', color: '#d4af37', fontWeight: '600' }}>{prod.category}</td>
+                              <td style={{ padding: '12px 16px', color: '#00ffb3', fontWeight: '600' }}>{prod.price || 'Consultar'}</td>
+                              <td style={{ padding: '12px 16px', color: 'rgba(255,255,255,0.6)' }}>{prod.media?.length || 0} archivos</td>
+                              <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                                <div style={{ display: 'inline-flex', gap: '8px' }}>
+                                  <button
+                                    onClick={() => handleStartEdit(prod)}
+                                    style={{ padding: '6px 12px', background: 'rgba(212,175,55,0.2)', border: '1px solid #d4af37', color: '#f5d77f', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                  >
+                                    <Edit size={14} /> Editar
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteCustomProduct(prod.id)}
+                                    style={{ padding: '6px 12px', background: 'rgba(255,85,85,0.2)', border: '1px solid rgba(255,85,85,0.4)', color: '#ff7777', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                  >
+                                    <Trash2 size={14} /> Eliminar
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   )}
                 </div>
