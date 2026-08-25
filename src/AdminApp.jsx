@@ -1209,6 +1209,7 @@ export default function AdminApp() {
                       {filteredProducts.map((prod) => (
                         <div
                           key={prod.id}
+                          onClick={() => handleStartEdit(prod)}
                           style={{
                             background: 'rgba(14, 18, 25, 0.9)',
                             border: editingProductId === prod.id ? '2px solid #00ffb3' : '1px solid rgba(212, 175, 55, 0.25)',
@@ -1216,15 +1217,16 @@ export default function AdminApp() {
                             overflow: 'hidden',
                             display: 'flex',
                             flexDirection: 'column',
-                            position: 'relative'
+                            position: 'relative',
+                            cursor: 'pointer'
                           }}
                         >
                           {/* Preview Media */}
-                          <div style={{ height: '160px', position: 'relative', background: '#000' }}>
+                          <div style={{ height: '160px', position: 'relative', background: '#000', pointerEvents: 'none' }}>
                             {prod.media[0]?.type === 'video' ? (
-                              <video src={prod.media[0]?.url} autoPlay muted loop style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              <video src={prod.media[0]?.url} autoPlay muted loop style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
                             ) : (
-                              <img src={prod.media[0]?.url} alt={prod.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              <img src={prod.media[0]?.url} alt={prod.name} style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
                             )}
 
                             <span style={{ position: 'absolute', bottom: '8px', right: '8px', background: 'rgba(0,0,0,0.75)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', color: '#f5d77f', fontWeight: '600' }}>
@@ -1236,24 +1238,24 @@ export default function AdminApp() {
                                 {prod.tag}
                               </span>
                             )}
+                          </div>
 
-                            {/* Action Buttons: Edit and Delete */}
-                            <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', gap: '6px' }}>
-                              <button
-                                onClick={() => handleStartEdit(prod)}
-                                style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(212,175,55,0.95)', border: 'none', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.5)' }}
-                                title="Editar joya"
-                              >
-                                <Edit size={15} />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteCustomProduct(prod.id)}
-                                style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,85,85,0.85)', border: 'none', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.5)' }}
-                                title="Eliminar joya"
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            </div>
+                          {/* Action Buttons: Edit and Delete */}
+                          <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', gap: '6px', zIndex: 10 }}>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleStartEdit(prod); }}
+                              style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(212,175,55,0.95)', border: 'none', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.5)' }}
+                              title="Editar joya"
+                            >
+                              <Edit size={15} />
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleDeleteCustomProduct(prod.id); }}
+                              style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,85,85,0.85)', border: 'none', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.5)' }}
+                              title="Eliminar joya"
+                            >
+                              <Trash2 size={16} />
+                            </button>
                           </div>
 
                           {/* Info */}
@@ -1300,12 +1302,12 @@ export default function AdminApp() {
                         </thead>
                         <tbody>
                           {filteredProducts.map((prod) => (
-                            <tr key={prod.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: editingProductId === prod.id ? 'rgba(0,255,179,0.08)' : 'transparent' }}>
-                              <td style={{ padding: '12px 16px', width: '70px' }}>
+                            <tr key={prod.id} onClick={() => handleStartEdit(prod)} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: editingProductId === prod.id ? 'rgba(0,255,179,0.08)' : 'transparent', cursor: 'pointer' }}>
+                              <td style={{ padding: '12px 16px', width: '70px', pointerEvents: 'none' }}>
                                 {prod.media[0]?.type === 'video' ? (
-                                  <video src={prod.media[0]?.url} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(212,175,55,0.3)' }} autoPlay muted loop />
+                                  <video src={prod.media[0]?.url} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(212,175,55,0.3)', pointerEvents: 'none' }} autoPlay muted loop />
                                 ) : (
-                                  <img src={prod.media[0]?.url} alt={prod.name} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(212,175,55,0.3)' }} />
+                                  <img src={prod.media[0]?.url} alt={prod.name} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(212,175,55,0.3)', pointerEvents: 'none' }} />
                                 )}
                               </td>
                               <td style={{ padding: '12px 16px', fontWeight: '600', color: '#fff' }}>
@@ -1318,13 +1320,13 @@ export default function AdminApp() {
                               <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                                 <div style={{ display: 'inline-flex', gap: '8px' }}>
                                   <button
-                                    onClick={() => handleStartEdit(prod)}
+                                    onClick={(e) => { e.stopPropagation(); handleStartEdit(prod); }}
                                     style={{ padding: '6px 12px', background: 'rgba(212,175,55,0.2)', border: '1px solid #d4af37', color: '#f5d77f', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
                                   >
                                     <Edit size={14} /> Editar
                                   </button>
                                   <button
-                                    onClick={() => handleDeleteCustomProduct(prod.id)}
+                                    onClick={(e) => { e.stopPropagation(); handleDeleteCustomProduct(prod.id); }}
                                     style={{ padding: '6px 12px', background: 'rgba(255,85,85,0.2)', border: '1px solid rgba(255,85,85,0.4)', color: '#ff7777', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
                                   >
                                     <Trash2 size={14} /> Eliminar

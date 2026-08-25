@@ -606,12 +606,12 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
                   ) : (
                     <div className="admin-custom-items-grid">
                       {customProducts.map((prod) => (
-                        <div key={prod.id} className="admin-custom-card">
-                          <div className="admin-custom-card-preview">
+                        <div key={prod.id} className="admin-custom-card" onClick={() => handleStartEdit(prod)} style={{ cursor: 'pointer' }}>
+                          <div className="admin-custom-card-preview" style={{ pointerEvents: 'none' }}>
                             {prod.media[0]?.type === 'video' ? (
-                              <video src={prod.media[0]?.url} autoPlay muted loop className="preview-media" />
+                              <video src={prod.media[0]?.url} autoPlay muted loop className="preview-media" style={{ pointerEvents: 'none' }} />
                             ) : (
-                              <img src={prod.media[0]?.url} alt={prod.name} className="preview-media" />
+                              <img src={prod.media[0]?.url} alt={prod.name} className="preview-media" style={{ pointerEvents: 'none' }} />
                             )}
                             <span className="custom-card-badge">{prod.media?.length || 0} multimedia</span>
                           </div>
@@ -624,10 +624,10 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
                             </span>
                           </div>
 
-                          <div style={{ display: 'flex', gap: '6px' }}>
+                          <div style={{ display: 'flex', gap: '6px', zIndex: 10 }}>
                             <button
                               className="btn-edit-card"
-                              onClick={() => handleStartEdit(prod)}
+                              onClick={(e) => { e.stopPropagation(); handleStartEdit(prod); }}
                               title="Editar joya"
                               style={{ background: 'rgba(212,175,55,0.2)', border: '1px solid #d4af37', color: '#f5d77f', borderRadius: '8px', padding: '6px', cursor: 'pointer' }}
                             >
@@ -635,7 +635,7 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
                             </button>
                             <button
                               className="btn-delete-card"
-                              onClick={() => handleDeleteCustomProduct(prod.id)}
+                              onClick={(e) => { e.stopPropagation(); handleDeleteCustomProduct(prod.id); }}
                               title="Eliminar joya"
                             >
                               <Trash2 size={16} />
