@@ -4294,6 +4294,26 @@ ul, ol {
   letter-spacing: 0.04em;
 }
 
+/* ===== ADMIN PANEL MOBILE RESPONSIVENESS ===== */
+@media (max-width: 768px) {
+  header {
+    padding: 10px 14px !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+
+  /* Prevent auto-zoom on iOS Safari input focus */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+
+  .admin-modal-card {
+    width: 95vw !important;
+    max-height: 94vh !important;
+    border-radius: 16px !important;
+  }
+}
+
 
 
 

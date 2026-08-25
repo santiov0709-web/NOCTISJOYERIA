@@ -542,16 +542,6 @@ export default function AdminApp() {
             </button>
           </div>
 
-          {isSupabaseConfigured ? (
-            <span className="badge-supabase-active" style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(0,255,179,0.12)', border: '1px solid rgba(0,255,179,0.3)', color: '#00ffb3' }}>
-              <Wifi size={13} /> Supabase En Vivo
-            </span>
-          ) : (
-            <span className="badge-supabase-offline" style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,170,0,0.12)', border: '1px solid rgba(255,170,0,0.3)', color: '#ffaa00' }}>
-              <WifiOff size={13} /> Modo Local
-            </span>
-          )}
-
           {isAuthenticated && (
             <button className="admin-tab-logout" onClick={handleLogout} style={{ padding: '8px 16px', borderRadius: '8px', background: 'rgba(255,85,85,0.15)', border: '1px solid rgba(255,85,85,0.3)', color: '#ff7777', cursor: 'pointer', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
               <Lock size={14} /> Salir
@@ -560,9 +550,8 @@ export default function AdminApp() {
         </div>
       </header>
 
-      {/* Body Container */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '36px 20px', maxWidth: '1240px', width: '100%', margin: '0 auto' }}>
-        
+      {/* Body Container Responsive */}
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px 14px', maxWidth: '1240px', width: '100%', margin: '0 auto' }}>
         
         {!isAuthenticated ? (
           /* Pantalla de Bloqueo / Desbloqueo por PIN */
@@ -572,20 +561,20 @@ export default function AdminApp() {
             style={{
               maxWidth: '440px',
               width: '100%',
-              margin: '60px auto',
+              margin: '30px auto',
               background: 'linear-gradient(145deg, #0e1219 0%, #07090e 100%)',
               border: '1px solid rgba(212, 175, 55, 0.4)',
               borderRadius: '20px',
-              padding: '48px 36px',
+              padding: '36px 24px',
               textAlign: 'center',
               boxShadow: '0 30px 70px rgba(0,0,0,0.9), 0 0 40px rgba(212,175,55,0.2)'
             }}
           >
-            <div className="admin-lock-icon-wrap" style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
-              <Lock size={40} color="#d4af37" />
+            <div className="admin-lock-icon-wrap" style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+              <Lock size={36} color="#d4af37" />
             </div>
-            <h2 className="font-cinzel" style={{ fontSize: '1.6rem', marginBottom: '10px', color: '#fff', letterSpacing: '0.08em' }}>Vault Administrativo</h2>
-            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', marginBottom: '28px', lineHeight: '1.6' }}>
+            <h2 className="font-cinzel" style={{ fontSize: '1.4rem', marginBottom: '10px', color: '#fff', letterSpacing: '0.08em' }}>Vault Administrativo</h2>
+            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', marginBottom: '24px', lineHeight: '1.6' }}>
               Ingresa tu PIN de seguridad para gestionar el catálogo exclusivo de joyas en tiempo real.
             </p>
 
@@ -604,7 +593,7 @@ export default function AdminApp() {
                     border: pinError ? '1px solid #ff4d4d' : '1px solid rgba(212, 175, 55, 0.3)',
                     borderRadius: '12px',
                     color: '#fff',
-                    fontSize: '15px',
+                    fontSize: '16px',
                     outline: 'none',
                     boxSizing: 'border-box'
                   }}
@@ -641,44 +630,44 @@ export default function AdminApp() {
             </form>
           </motion.div>
         ) : (
-          /* Dashboard Principal de Administración de Lujo */
-          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '28px' }}>
+          /* Dashboard Principal de Administración 100% Responsivo */
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
             
-            {/* Stats Summary Bar */}
+            {/* Stats Summary Bar Responsive */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: '16px',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+              gap: '12px',
               width: '100%'
             }}>
-              <div style={{ background: 'rgba(14, 18, 25, 0.8)', border: '1px solid rgba(212, 175, 55, 0.25)', borderRadius: '16px', padding: '20px 24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(212, 175, 55, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <FolderPlus size={24} color="#d4af37" />
+              <div style={{ background: 'rgba(14, 18, 25, 0.8)', border: '1px solid rgba(212, 175, 55, 0.25)', borderRadius: '14px', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(212, 175, 55, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <FolderPlus size={20} color="#d4af37" />
                 </div>
                 <div>
-                  <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: '600' }}>Joyas Guardadas</span>
-                  <h3 style={{ fontSize: '24px', margin: '4px 0 0', color: '#fff', fontWeight: '700' }}>{customProducts.length}</h3>
+                  <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: '600' }}>Joyas Guardadas</span>
+                  <h3 style={{ fontSize: '20px', margin: '2px 0 0', color: '#fff', fontWeight: '700' }}>{customProducts.length}</h3>
                 </div>
               </div>
 
-              <div style={{ background: 'rgba(14, 18, 25, 0.8)', border: '1px solid rgba(212, 175, 55, 0.25)', borderRadius: '16px', padding: '20px 24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(212, 175, 55, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <ImageIcon size={24} color="#d4af37" />
+              <div style={{ background: 'rgba(14, 18, 25, 0.8)', border: '1px solid rgba(212, 175, 55, 0.25)', borderRadius: '14px', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(212, 175, 55, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <ImageIcon size={20} color="#d4af37" />
                 </div>
                 <div>
-                  <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: '600' }}>Fotos & Videos En Vivo</span>
-                  <h3 style={{ fontSize: '24px', margin: '4px 0 0', color: '#fff', fontWeight: '700' }}>{totalMediaUploaded}</h3>
+                  <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: '600' }}>Fotos & Videos</span>
+                  <h3 style={{ fontSize: '20px', margin: '2px 0 0', color: '#fff', fontWeight: '700' }}>{totalMediaUploaded}</h3>
                 </div>
               </div>
 
-              <div style={{ background: 'rgba(14, 18, 25, 0.8)', border: '1px solid rgba(212, 175, 55, 0.25)', borderRadius: '16px', padding: '20px 24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: isSupabaseConfigured ? 'rgba(0, 255, 179, 0.12)' : 'rgba(255, 170, 0, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Database size={24} color={isSupabaseConfigured ? '#00ffb3' : '#ffaa00'} />
+              <div style={{ background: 'rgba(14, 18, 25, 0.8)', border: '1px solid rgba(212, 175, 55, 0.25)', borderRadius: '14px', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(0, 255, 179, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Sparkles size={20} color="#00ffb3" />
                 </div>
                 <div>
-                  <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: '600' }}>Sincronización Nube</span>
-                  <h3 style={{ fontSize: '14px', margin: '4px 0 0', color: isSupabaseConfigured ? '#00ffb3' : '#ffaa00', fontWeight: '600' }}>
-                    {isSupabaseConfigured ? '⚡ Supabase Conectado' : '💾 LocalStorage Activo'}
+                  <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: '600' }}>Estado Galería</span>
+                  <h3 style={{ fontSize: '13px', margin: '2px 0 0', color: '#00ffb3', fontWeight: '600' }}>
+                    ⚡ Publicado en Vivo
                   </h3>
                 </div>
               </div>

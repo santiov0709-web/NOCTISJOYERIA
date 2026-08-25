@@ -352,18 +352,7 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
               <span className="admin-badge-secret">Acceso Privado</span>
             </div>
 
-            {/* Badge Indicador de Supabase */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              {isSupabaseConfigured ? (
-                <span className="badge-supabase-active" title="Conectado a la base de datos PostgreSQL en la nube">
-                  <Wifi size={12} /> Supabase En Vivo
-                </span>
-              ) : (
-                <span className="badge-supabase-offline" title="Modo local. Configura tus claves de Supabase en .env para sincronización en la nube">
-                  <WifiOff size={12} /> Modo Local (Sin .env)
-                </span>
-              )}
-
               <button className="admin-close-btn" onClick={onClose} aria-label="Cerrar panel">
                 <X size={20} color="#888" />
               </button>
@@ -597,7 +586,7 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
                 <div className="admin-list-view">
                   <div className="admin-list-header">
                     <h4>
-                      Joyas registradas en {isSupabaseConfigured ? 'Supabase Cloud' : 'la Galería'} ({customProducts.length})
+                      Joyas registradas en la Galería ({customProducts.length})
                     </h4>
                     {customProducts.length > 0 && (
                       <button className="btn-clear-all" onClick={handleClearAllCustom}>
