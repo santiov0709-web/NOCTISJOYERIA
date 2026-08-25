@@ -13,6 +13,49 @@ import { INITIAL_GALLERY_ITEMS } from './config/initialProducts';
 const DEFAULT_PIN = import.meta.env.VITE_ADMIN_PIN || 'BRAYAN2323';
 const STORAGE_KEY = 'noctis_custom_products';
 
+const withTimeout = (promise, ms = 6000) => {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('Petición a la nube cancelada por tiempo de espera')), ms))
+  ]);
+};
+
+const compressImageDataUrl = (dataUrl, maxDimension = 1200, quality = 0.82) => {
+  return new Promise((resolve) => {
+    if (!dataUrl || !dataUrl.startsWith('data:image')) {
+      return resolve(dataUrl);
+    }
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+      if (width <= maxDimension && height <= maxDimension) {
+        return resolve(dataUrl);
+      }
+      if (width > height) {
+        if (width > maxDimension) {
+          height = Math.round((height * maxDimension) / width);
+          width = maxDimension;
+        }
+      } else {
+        if (height > maxDimension) {
+          width = Math.round((width * maxDimension) / height);
+          height = maxDimension;
+        }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+};
+
 export default function AdminApp() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pinInput, setPinInput] = useState('');
@@ -259,122 +302,126 @@ export default function AdminApp() {
     }
 
     setIsSaving(true);
-    const finalCategory = category === 'Otro' ? customCategory.trim() || 'Exclusivo' : category;
+    try {
+      const finalCategory = category === 'Otro' ? customCategory.trim() || 'Exclusivo' : category;
 
-    const formattedMedia = mediaItems.map(m => ({
-      type: m.type,
-      url: m.url
-    }));
-
-    if (editingProductId) {
-      // MODO EDICIÓN
-      const targetProd = customProducts.find(p => p.id === editingProductId);
-      const updatedProd = {
-        id: editingProductId,
-        name: productName.trim(),
-        category: finalCategory,
-        price: price.trim(),
-        description: description.trim(),
-        tag: productTag,
-        spanClass: spanClass,
-        media: formattedMedia,
-        createdAt: targetProd?.createdAt || new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-
-      if (isSupabaseConfigured && supabase) {
-        try {
-          const { error } = await supabase
-            .from('products')
-            .update({
-              name: updatedProd.name,
-              category: updatedProd.category,
-              price: updatedProd.price,
-              description: updatedProd.description,
-              tag: updatedProd.tag,
-              span_class: updatedProd.spanClass,
-              media: updatedProd.media
-            })
-            .eq('id', editingProductId);
-
-          if (error) {
-            console.error('Error actualizando en Supabase:', error);
-          }
-        } catch (err) {
-          console.error('Error Supabase update catch:', err);
-        }
-      }
-
-      const updatedList = customProducts.map(p => p.id === editingProductId ? updatedProd : p);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
-      setCustomProducts(updatedList);
-      setEditingProductId(null);
-
-      setSuccessMessage('✨ ¡Joya actualizada con éxito en el catálogo!');
-    } else {
-      // MODO CREACIÓN
-      const newProd = {
-        id: 'custom-' + Date.now(),
-        name: productName.trim(),
-        category: finalCategory,
-        price: price.trim(),
-        description: description.trim(),
-        tag: productTag,
-        spanClass: spanClass,
-        media: formattedMedia,
-        createdAt: new Date().toISOString()
-      };
-
-      // Save to Supabase if active
-      if (isSupabaseConfigured && supabase) {
-        try {
-          const { error } = await supabase.from('products').insert([
-            {
-              id: newProd.id,
-              name: newProd.name,
-              category: newProd.category,
-              price: newProd.price,
-              description: newProd.description,
-              tag: newProd.tag,
-              span_class: newProd.spanClass,
-              media: newProd.media,
-              created_at: newProd.createdAt
-            }
-          ]);
-
-          if (error) {
-            console.error('Error insertando en Supabase:', error);
-          }
-        } catch (err) {
-          console.error('Error Supabase catch:', err);
-        }
-      }
-
-      // Save to LocalStorage
-      const existing = [newProd, ...customProducts];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
-      setCustomProducts(existing);
-
-      setSuccessMessage(
-        isSupabaseConfigured
-          ? '✨ ¡Joya guardada en Supabase Cloud y publicada en tiempo real!'
-          : '✨ ¡Joya añadida con éxito al catálogo!'
+      // Optimizar imágenes en segundo plano
+      const formattedMedia = await Promise.all(
+        mediaItems.map(async (m) => ({
+          type: m.type,
+          url: m.type === 'image' ? await compressImageDataUrl(m.url) : m.url
+        }))
       );
+
+      if (editingProductId) {
+        // MODO EDICIÓN
+        const targetProd = customProducts.find(p => p.id === editingProductId);
+        const updatedProd = {
+          id: editingProductId,
+          name: productName.trim(),
+          category: finalCategory,
+          price: price.trim(),
+          description: description.trim(),
+          tag: productTag,
+          spanClass: spanClass,
+          media: formattedMedia,
+          createdAt: targetProd?.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        if (isSupabaseConfigured && supabase) {
+          try {
+            await withTimeout(
+              supabase
+                .from('products')
+                .update({
+                  name: updatedProd.name,
+                  category: updatedProd.category,
+                  price: updatedProd.price,
+                  description: updatedProd.description,
+                  tag: updatedProd.tag,
+                  span_class: updatedProd.spanClass,
+                  media: updatedProd.media
+                })
+                .eq('id', editingProductId)
+            );
+          } catch (err) {
+            console.warn('Advertencia Supabase update:', err);
+          }
+        }
+
+        const updatedList = customProducts.map(p => p.id === editingProductId ? updatedProd : p);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+        setCustomProducts(updatedList);
+        setEditingProductId(null);
+
+        setSuccessMessage('✨ ¡Joya actualizada con éxito en el catálogo!');
+      } else {
+        // MODO CREACIÓN
+        const newProd = {
+          id: 'custom-' + Date.now(),
+          name: productName.trim(),
+          category: finalCategory,
+          price: price.trim(),
+          description: description.trim(),
+          tag: productTag,
+          spanClass: spanClass,
+          media: formattedMedia,
+          createdAt: new Date().toISOString()
+        };
+
+        // Save to Supabase if active with timeout
+        if (isSupabaseConfigured && supabase) {
+          try {
+            await withTimeout(
+              supabase.from('products').insert([
+                {
+                  id: newProd.id,
+                  name: newProd.name,
+                  category: newProd.category,
+                  price: newProd.price,
+                  description: newProd.description,
+                  tag: newProd.tag,
+                  span_class: newProd.spanClass,
+                  media: newProd.media,
+                  created_at: newProd.createdAt
+                }
+              ])
+            );
+          } catch (err) {
+            console.warn('Advertencia Supabase insert (guardado en almacenamiento local):', err);
+          }
+        }
+
+        // Save to LocalStorage
+        const existing = [newProd, ...customProducts];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+        setCustomProducts(existing);
+
+        setSuccessMessage(
+          isSupabaseConfigured
+            ? '✨ ¡Joya guardada en Supabase Cloud y publicada en tiempo real!'
+            : '✨ ¡Joya añadida con éxito al catálogo!'
+        );
+      }
+
+      // Reset Form
+      setProductName('');
+      setCustomCategory('');
+      setPrice('');
+      setDescription('');
+      setMediaItems([]);
+
+      window.dispatchEvent(new Event('noctis_products_updated'));
+
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 4000);
+    } catch (err) {
+      console.error('Error al guardar joya:', err);
+    } finally {
+      setIsSaving(false);
     }
-
-    // Reset Form
-    setProductName('');
-    setCustomCategory('');
-    setPrice('');
-    setDescription('');
-    setMediaItems([]);
-    setIsSaving(false);
-
-    window.dispatchEvent(new Event('noctis_products_updated'));
-
-    setTimeout(() => {
-      setSuccessMessage('');
-    }, 4000);
   };
 
   const handleDeleteCustomProduct = async (id) => {
