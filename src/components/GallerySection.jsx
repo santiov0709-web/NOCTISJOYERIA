@@ -29,7 +29,13 @@ function CardCarousel({ item, onOpenModal }) {
   const waUrl = getWaUrl(`Hola Noctis Joyería, quisiera recibir asesoría del producto: ${item.name}`);
 
   return (
-    <div className={`gallery-card ${item.spanClass}`} onClick={() => onOpenModal(item, index)}>
+    <motion.div 
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className={`gallery-card ${item.spanClass}`} 
+      onClick={() => onOpenModal(item, index)}
+    >
       <div className="gallery-card-img-wrap">
         {currentMedia.type === 'video' ? (
           <video
@@ -97,7 +103,7 @@ function CardCarousel({ item, onOpenModal }) {
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
