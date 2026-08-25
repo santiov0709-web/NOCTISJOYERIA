@@ -139,10 +139,16 @@ export default function GallerySection() {
     
     if (isSupabaseConfigured && supabase) {
       try {
-        const { data, error } = await supabase
+        const fetchPromise = supabase
           .from('products')
           .select('*')
           .order('created_at', { ascending: false });
+          
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Supabase timeout')), 5000)
+        );
+
+        const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
 
         if (!error && data) {
           supabaseFormatted = data.map(item => {
