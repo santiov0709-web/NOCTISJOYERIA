@@ -22,17 +22,18 @@ const getCombinedGalleryItems = (indexedDBProducts = [], supabaseProducts = []) 
 
   const combinedMap = new Map();
 
-  // 1. Static base items
+  // 1. Static base items siempre se muestran
   INITIAL_GALLERY_ITEMS.forEach(item => combinedMap.set(item.id, item));
 
-  // 2. Storage items
-  customFromStorage.forEach(item => combinedMap.set(item.id, item));
-
-  // 3. IndexedDB items (High capacity)
-  indexedDBProducts.forEach(item => combinedMap.set(item.id, item));
-
-  // 4. Supabase cloud items
-  supabaseProducts.forEach(item => combinedMap.set(item.id, item));
+  if (isSupabaseConfigured) {
+    // Si Supabase está conectado, es la única fuente de verdad para joyas personalizadas
+    supabaseProducts.forEach(item => combinedMap.set(item.id, item));
+  } else {
+    // Fallback offline si no hay Supabase
+    customFromStorage.forEach(item => combinedMap.set(item.id, item));
+    indexedDBProducts.forEach(item => combinedMap.set(item.id, item));
+    supabaseProducts.forEach(item => combinedMap.set(item.id, item));
+  }
 
   return Array.from(combinedMap.values());
 };

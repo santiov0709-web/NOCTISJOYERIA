@@ -180,16 +180,32 @@ export default function AdminApp() {
       console.error('Error cargando de localStorage:', e);
     }
 
-    // Combine: 1. Initial base items, 2. LocalStorage items, 3. IndexedDB items, 4. Supabase items
     const combinedMap = new Map();
     INITIAL_GALLERY_ITEMS.forEach(item => combinedMap.set(item.id, item));
-    storageList.forEach(item => combinedMap.set(item.id, item));
-    indexedList.forEach(item => combinedMap.set(item.id, item));
-    supabaseList.forEach(item => combinedMap.set(item.id, item));
 
-    const finalProducts = Array.from(combinedMap.values());
-    setCustomProducts(finalProducts);
-    await saveAllProductsDB(finalProducts);
+    if (isSupabaseConfigured) {
+      // Si Supabase está funcionando, es la fuente de verdad absoluta. 
+      // Se ignoran los locales bugeados y se purga el almacenamiento local.
+      supabaseList.forEach(item => combinedMap.set(item.id, item));
+      
+      const finalProducts = Array.from(combinedMap.values());
+      setCustomProducts(finalProducts);
+      
+      // Sincronizar y limpiar IndexedDB/LocalStorage para eliminar rastros de joyas fallidas
+      await saveAllProductsDB(finalProducts);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(finalProducts));
+      } catch (e) {}
+    } else {
+      // Fallback offline
+      storageList.forEach(item => combinedMap.set(item.id, item));
+      indexedList.forEach(item => combinedMap.set(item.id, item));
+      supabaseList.forEach(item => combinedMap.set(item.id, item));
+
+      const finalProducts = Array.from(combinedMap.values());
+      setCustomProducts(finalProducts);
+      await saveAllProductsDB(finalProducts);
+    }
   };
 
   const handlePinSubmit = (e) => {
