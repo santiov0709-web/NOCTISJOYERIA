@@ -29,10 +29,7 @@ function CardCarousel({ item, onOpenModal }) {
   const waUrl = getWaUrl(`Hola Noctis Joyería, quisiera recibir asesoría del producto: ${item.name}`);
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
+    <div 
       className={`gallery-card ${item.spanClass}`} 
       onClick={() => onOpenModal(item, index)}
     >
@@ -103,7 +100,7 @@ function CardCarousel({ item, onOpenModal }) {
           </button>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
