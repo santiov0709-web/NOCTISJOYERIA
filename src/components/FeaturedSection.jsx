@@ -99,7 +99,7 @@ export default function FeaturedSection() {
           transition={{ duration: 0.9, ease }}
         >
           <FeaturedGem />
-          <div className="featured-badge">⭐ Pieza del Mes</div>
+          <div className="featured-badge">✦ Pieza del Mes</div>
         </motion.div>
 
         {/* Info */}

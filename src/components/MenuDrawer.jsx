@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { X } from 'lucide-react';
+import { X, MessageCircle, Video, Camera, MapPin } from 'lucide-react';
 import { WA_URL } from '../config/whatsapp';
 
 const ease = [0.16, 1, 0.3, 1];
@@ -146,7 +146,7 @@ export default function MenuDrawer({ open, onClose }) {
                 >
                   <span>{link.label}</span>
                   <span style={{ fontSize: '1rem', color: 'var(--gold-light)', opacity: 0.8 }}>
-                    {link.isWa ? '💬' : '✦'}
+                    {link.isWa ? <MessageCircle size={16} /> : '✦'}
                   </span>
                 </motion.div>
               ))}
@@ -164,7 +164,7 @@ export default function MenuDrawer({ open, onClose }) {
                 rel="noopener noreferrer"
                 style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}
               >
-                🎵 TikTok: <strong style={{ color: 'var(--gold-light)' }}>@noctis.joyeria</strong>
+                <Video size={15} color="#00ffb3" /> TikTok: <strong style={{ color: 'var(--gold-light)' }}>@noctis.joyeria</strong>
               </a>
 
               <a
@@ -173,7 +173,7 @@ export default function MenuDrawer({ open, onClose }) {
                 rel="noopener noreferrer"
                 style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}
               >
-                📸 Instagram: <strong style={{ color: 'var(--gold-light)' }}>@noctisjoyeria</strong>
+                <Camera size={15} color="#f5d77f" /> Instagram: <strong style={{ color: 'var(--gold-light)' }}>@noctisjoyeria</strong>
               </a>
 
               <a
@@ -182,11 +182,11 @@ export default function MenuDrawer({ open, onClose }) {
                 rel="noopener noreferrer"
                 style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}
               >
-                💬 WhatsApp Oficial
+                <MessageCircle size={15} color="#25D366" /> WhatsApp Oficial
               </a>
 
-              <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>
-                📍 Medellín, Colombia
+              <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <MapPin size={14} color="#f5d77f" /> Medellín, Colombia
               </p>
 
               <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginTop: '6px' }}>

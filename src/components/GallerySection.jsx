@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { motion, useInView } from 'motion/react';
 import { getWaUrl } from '../config/whatsapp';
-import { ChevronLeft, ChevronRight, Play, Eye } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, Eye, Video, Camera } from 'lucide-react';
 import JewelryModal from './JewelryModal';
 import { supabase, isSupabaseConfigured } from '../config/supabase';
 import { INITIAL_GALLERY_ITEMS } from '../config/initialProducts';
@@ -242,8 +242,9 @@ export default function GallerySection() {
             target="_blank"
             rel="noopener noreferrer"
             className="btn-tiktok-luxury"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
           >
-            🎵 TikTok: @noctis.joyeria
+            <Video size={16} color="#00ffb3" /> TikTok: @noctis.joyeria
           </a>
 
           <a
@@ -251,8 +252,9 @@ export default function GallerySection() {
             target="_blank"
             rel="noopener noreferrer"
             className="btn-instagram-luxury"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
           >
-            📸 Instagram: @noctisjoyeria
+            <Camera size={16} color="#f5d77f" /> Instagram: @noctisjoyeria
           </a>
         </div>
       </motion.div>

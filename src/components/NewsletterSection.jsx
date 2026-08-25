@@ -1,5 +1,6 @@
 import { motion, useInView } from 'motion/react';
 import { useRef } from 'react';
+import { Crown } from 'lucide-react';
 import { WA_URL } from '../config/whatsapp';
 
 const ease = [0.16, 1, 0.3, 1];
@@ -17,7 +18,7 @@ export default function NewsletterSection() {
         transition={{ duration: 0.8, ease }}
       >
         <div className="newsletter-icon">
-          <span style={{ fontSize: '20px', color: 'var(--gold)' }}>👑</span>
+          <Crown size={22} color="#d4af37" />
         </div>
 
         <h2 className="newsletter-title">
