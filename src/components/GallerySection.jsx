@@ -60,7 +60,6 @@ function CardCarousel({ item, onOpenModal }) {
             src={currentMedia.url}
             alt={item.name}
             className="gallery-card-img"
-            loading="lazy"
           />
         )}
       </div>
