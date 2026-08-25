@@ -210,7 +210,7 @@ export default function AdminApp() {
   const handleStartEdit = (prod) => {
     setEditingProductId(prod.id);
     setProductName(prod.name || '');
-    const standardCategories = ['Anillos', 'Pulseras', 'Cadenas', 'Alta Joyería', 'Esmeraldas', 'Relojes'];
+    const standardCategories = ['Anillos', 'Pulseras', 'Cadenas', 'Alta Joyería', 'Esmeraldas', 'Relojes', 'Topos', 'Herrajes'];
     if (standardCategories.includes(prod.category)) {
       setCategory(prod.category);
       setCustomCategory('');
@@ -819,6 +819,8 @@ export default function AdminApp() {
                         <option value="Alta Joyería">Alta Joyería</option>
                         <option value="Esmeraldas">Esmeraldas & Gemas</option>
                         <option value="Relojes">Relojes de Lujo</option>
+                        <option value="Topos">Topos 18k</option>
+                        <option value="Herrajes">Herrajes 18k</option>
                         <option value="Otro">Otra Categoría Personalizada</option>
                       </select>
                     </div>
@@ -1133,7 +1135,7 @@ export default function AdminApp() {
                     </div>
 
                     <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
-                      {['Todos', 'Anillos', 'Pulseras', 'Cadenas', 'Alta Joyería'].map(cat => (
+                      {['Todos', 'Anillos', 'Pulseras', 'Cadenas', 'Alta Joyería', 'Esmeraldas', 'Relojes', 'Topos', 'Herrajes'].map(cat => (
                         <button
                           key={cat}
                           onClick={() => setSelectedCategoryFilter(cat)}

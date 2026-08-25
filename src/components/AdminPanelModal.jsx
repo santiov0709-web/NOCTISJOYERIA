@@ -136,7 +136,7 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
   const handleStartEdit = (prod) => {
     setEditingProductId(prod.id);
     setProductName(prod.name || '');
-    const standardCategories = ['Anillos', 'Pulseras', 'Cadenas', 'Alta Joyería'];
+    const standardCategories = ['Anillos', 'Pulseras', 'Cadenas', 'Alta Joyería', 'Topos', 'Herrajes'];
     if (standardCategories.includes(prod.category)) {
       setCategory(prod.category);
       setCustomCategory('');
@@ -454,6 +454,8 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
                         <option value="Pulseras">Pulseras 18k</option>
                         <option value="Cadenas">Cadenas & Dijes 18k</option>
                         <option value="Alta Joyería">Alta Joyería</option>
+                        <option value="Topos">Topos 18k</option>
+                        <option value="Herrajes">Herrajes 18k</option>
                         <option value="Otro">Otra Categoría Personalizada</option>
                       </select>
                     </div>
