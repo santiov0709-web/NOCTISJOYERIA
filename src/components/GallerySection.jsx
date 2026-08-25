@@ -9,7 +9,18 @@ import { getAllProductsDB } from '../config/indexedDBStorage';
 
 const ease = [0.16, 1, 0.3, 1];
 
-// Helper removido para simplificar la lógica de render instantáneo.
+function SkeletonCard() {
+  return (
+    <div className="gallery-card skeleton-card">
+      <div className="gallery-card-img-wrap skeleton-pulse" />
+      <div className="gallery-card-content">
+        <div className="skeleton-text skeleton-sub" />
+        <div className="skeleton-text skeleton-title" />
+        <div className="skeleton-btn" />
+      </div>
+    </div>
+  );
+}
 
 function CardCarousel({ item, onOpenModal }) {
   const [index, setIndex] = useState(0);
@@ -108,6 +119,7 @@ export default function GallerySection() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-60px' });
   const [selectedModal, setSelectedModal] = useState({ open: false, item: null });
+  const [isFetching, setIsFetching] = useState(true);
   const [items, setItems] = useState(() => {
     // Carga instantánea sincrónica a 0ms desde caché local (evita pop-in gráfico)
     const combinedMap = new Map();
@@ -123,6 +135,7 @@ export default function GallerySection() {
   });
 
   const loadGalleryProducts = async () => {
+    setIsFetching(true);
     let supabaseFormatted = null;
     
     if (isSupabaseConfigured && supabase) {
@@ -169,6 +182,7 @@ export default function GallerySection() {
 
       // Avisar al Preloader que ya todo el catálogo está listo para mostrarse
       window.dispatchEvent(new Event('noctis_supabase_loaded'));
+      setIsFetching(false);
     } else {
       // Fallback offline si Supabase falla o no está configurado
       try {
@@ -184,6 +198,7 @@ export default function GallerySection() {
       
       // Avisar al Preloader incluso si falla Supabase para no dejarlo colgado
       window.dispatchEvent(new Event('noctis_supabase_loaded'));
+      setIsFetching(false);
     }
   };
 
@@ -265,6 +280,16 @@ export default function GallerySection() {
         {items.map((item) => (
           <CardCarousel key={item.id} item={item} onOpenModal={handleOpenModal} />
         ))}
+        
+        {/* Skeleton Loaders para indicar progreso sin dañar el layout visual */}
+        {isFetching && (
+          <>
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </>
+        )}
       </div>
 
       {/* CTA Inferior con TikTok e Instagram */}

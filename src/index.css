@@ -1865,6 +1865,40 @@ ul, ol {
   }
 }
 
+/* ===== SKELETON LOADER PARA JOYAS ===== */
+.skeleton-card {
+  pointer-events: none;
+}
+.skeleton-pulse {
+  background: linear-gradient(90deg, var(--black-soft) 25%, var(--black-mid) 50%, var(--black-soft) 75%);
+  background-size: 200% 100%;
+  animation: skeletonLoading 1.5s infinite;
+}
+.skeleton-text {
+  background: rgba(255,255,255,0.1);
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+.skeleton-sub {
+  width: 40%;
+  height: 12px;
+}
+.skeleton-title {
+  width: 80%;
+  height: 24px;
+}
+.skeleton-btn {
+  width: 60%;
+  height: 36px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 20px;
+  margin-top: 12px;
+}
+@keyframes skeletonLoading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* Card base */
 .gallery-card {
   position: relative;

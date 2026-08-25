@@ -6,52 +6,28 @@ const ease = [0.16, 1, 0.3, 1];
 export default function LuxuryPreloader({ onFinish }) {
   const [progress, setProgress] = useState(0);
   const [isDone, setIsDone] = useState(false);
-  const [supabaseReady, setSupabaseReady] = useState(false);
 
   useEffect(() => {
-    // Escuchar el evento de que el catálogo terminó de cargar de la nube
-    const handleReady = () => setSupabaseReady(true);
-    window.addEventListener('noctis_supabase_loaded', handleReady);
-    
-    // Timeout de seguridad: Si la red está súper lenta, obligar a quitar el preloader a los 6 segundos
-    const fallback = setTimeout(() => {
-      setSupabaseReady(true);
-    }, 6000);
-
-    return () => {
-      window.removeEventListener('noctis_supabase_loaded', handleReady);
-      clearTimeout(fallback);
-    };
-  }, []);
-
-  useEffect(() => {
-    // Simulación de progreso inteligente
+    // Simulación de progreso ultra rápida (0.5s total) para no hacer esperar al cliente
     const interval = setInterval(() => {
       setProgress((prev) => {
-        // Si Supabase ya cargó los datos, saltamos la barra a 100% rápidamente
-        if (supabaseReady) {
-          const newProg = prev + 15;
-          if (newProg >= 100) {
-            clearInterval(interval);
+        const newProg = prev + 35; // Salta de 35 en 35
+        if (newProg >= 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            setIsDone(true);
             setTimeout(() => {
-              setIsDone(true);
-              setTimeout(() => {
-                if (onFinish) onFinish();
-              }, 600); // Dar tiempo a la animación de salida
-            }, 200);
-            return 100;
-          }
-          return newProg;
+              if (onFinish) onFinish();
+            }, 300); // Salida rápida
+          }, 150);
+          return 100;
         }
-
-        // Si Supabase aún está cargando, llegamos máximo al 95% y esperamos ahí
-        const diff = Math.floor(Math.random() * 10) + 2;
-        return Math.min(prev + diff, 95);
+        return newProg;
       });
-    }, 100);
+    }, 80);
 
     return () => clearInterval(interval);
-  }, [supabaseReady, onFinish]);
+  }, [onFinish]);
 
   return (
     <AnimatePresence>
