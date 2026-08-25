@@ -606,7 +606,7 @@ export default function AdminPanelModal({ open, onClose, onProductsUpdated }) {
                   ) : (
                     <div className="admin-custom-items-grid">
                       {customProducts.map((prod) => (
-                        <div key={prod.id} className="admin-custom-card" onClick={() => handleStartEdit(prod)} style={{ cursor: 'pointer' }}>
+                        <div key={prod.id} className="admin-custom-card">
                           <div className="admin-custom-card-preview" style={{ pointerEvents: 'none' }}>
                             {prod.media[0]?.type === 'video' ? (
                               <video src={prod.media[0]?.url} autoPlay muted loop className="preview-media" style={{ pointerEvents: 'none' }} />

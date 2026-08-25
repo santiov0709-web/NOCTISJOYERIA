@@ -1069,46 +1069,6 @@ export default function AdminApp() {
                     )}
                   </div>
 
-                    {/* VISTA PREVIA EN VIVO DE LA TARJETA */}
-                    {productName.trim() && (
-                      <div style={{ background: 'rgba(14, 22, 16, 0.6)', border: '1px dashed rgba(212, 175, 55, 0.4)', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        <span style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#f5d77f', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <Eye size={14} color="#00ffb3" /> Previsualización en Vivo (Así lucirá en la web):
-                        </span>
-
-                        <div style={{ background: '#0a0d13', border: '1px solid rgba(212, 175, 55, 0.3)', borderRadius: '14px', overflow: 'hidden', maxWidth: '320px', boxShadow: '0 10px 30px rgba(0,0,0,0.6)' }}>
-                          <div style={{ height: '180px', position: 'relative', background: '#000' }}>
-                            {mediaItems[0]?.url ? (
-                              mediaItems[0]?.type === 'video' ? (
-                                <video src={mediaItems[0]?.url} autoPlay muted loop style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                              ) : (
-                                <img src={mediaItems[0]?.url} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                              )
-                            ) : (
-                              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>
-                                (Sin Foto/Video)
-                              </div>
-                            )}
-
-                            <span style={{ position: 'absolute', top: '8px', left: '8px', background: 'rgba(212,175,55,0.9)', color: '#000', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: '700' }}>
-                              {productTag}
-                            </span>
-                          </div>
-
-                          <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            <span style={{ fontSize: '11px', color: '#d4af37', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: '700' }}>
-                              {category === 'Otro' ? customCategory || 'Exclusivo' : category} · Oro 18k
-                            </span>
-                            <h4 style={{ margin: 0, fontSize: '15px', color: '#fff', fontWeight: '600' }}>
-                              {productName}
-                            </h4>
-                            {price && <span style={{ fontSize: '13px', color: '#00ffb3', fontWeight: '700' }}>{price}</span>}
-                            {description && <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', margin: 0 }}>{description}</p>}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
                   {/* Submit Button */}
                   <button
                     type="submit"
@@ -1209,7 +1169,6 @@ export default function AdminApp() {
                       {filteredProducts.map((prod) => (
                         <div
                           key={prod.id}
-                          onClick={() => handleStartEdit(prod)}
                           style={{
                             background: 'rgba(14, 18, 25, 0.9)',
                             border: editingProductId === prod.id ? '2px solid #00ffb3' : '1px solid rgba(212, 175, 55, 0.25)',
@@ -1217,8 +1176,7 @@ export default function AdminApp() {
                             overflow: 'hidden',
                             display: 'flex',
                             flexDirection: 'column',
-                            position: 'relative',
-                            cursor: 'pointer'
+                            position: 'relative'
                           }}
                         >
                           {/* Preview Media */}
@@ -1302,7 +1260,7 @@ export default function AdminApp() {
                         </thead>
                         <tbody>
                           {filteredProducts.map((prod) => (
-                            <tr key={prod.id} onClick={() => handleStartEdit(prod)} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: editingProductId === prod.id ? 'rgba(0,255,179,0.08)' : 'transparent', cursor: 'pointer' }}>
+                            <tr key={prod.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: editingProductId === prod.id ? 'rgba(0,255,179,0.08)' : 'transparent' }}>
                               <td style={{ padding: '12px 16px', width: '70px', pointerEvents: 'none' }}>
                                 {prod.media[0]?.type === 'video' ? (
                                   <video src={prod.media[0]?.url} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(212,175,55,0.3)', pointerEvents: 'none' }} autoPlay muted loop />
